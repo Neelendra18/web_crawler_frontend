@@ -1,0 +1,54 @@
+.select-wrapper {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.select-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.select-field {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0f1930;
+  color: var(--text);
+  font-family: system-ui;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.select-field:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.select-field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(102, 217, 255, 0.2);
+}
+
+.select-field.select-error {
+  border-color: #ff4444;
+}
+
+.select-field option {
+  background: #101a2e;
+  color: var(--text);
+}
+
+.select-error-text {
+  font-size: 11px;
+  color: #ff4444;
+  margin-top: 4px;
+}
+
+.select-helper-text {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}

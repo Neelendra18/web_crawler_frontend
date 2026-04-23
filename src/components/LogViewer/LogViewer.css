@@ -1,0 +1,100 @@
+.log-viewer {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #0a0f1a;
+  overflow-y: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.log-empty {
+  padding: 16px;
+  color: var(--muted);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+}
+
+.log-list {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.log-entry {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.log-timestamp {
+  color: var(--muted);
+  min-width: 100px;
+  text-align: right;
+}
+
+.log-level {
+  min-width: 60px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.log-message {
+  flex: 1;
+  color: var(--text);
+}
+
+.log-info {
+  --level-color: var(--accent);
+}
+
+.log-info .log-level {
+  color: var(--accent);
+}
+
+.log-warning {
+  --level-color: var(--warn);
+  background: rgba(253, 176, 34, 0.05);
+}
+
+.log-warning .log-level {
+  color: var(--warn);
+}
+
+.log-error {
+  --level-color: #ff4444;
+  background: rgba(255, 68, 68, 0.05);
+}
+
+.log-error .log-level {
+  color: #ff4444;
+}
+
+.log-success {
+  --level-color: var(--success);
+}
+
+.log-success .log-level {
+  color: var(--success);
+}
+
+/* Scrollbar styling */
+.log-viewer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.log-viewer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.log-viewer::-webkit-scrollbar-thumb {
+  background: rgba(102, 217, 255, 0.3);
+  border-radius: 3px;
+}
+
+.log-viewer::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 217, 255, 0.5);
+}

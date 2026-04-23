@@ -1,0 +1,85 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+html {
+  --bg: #0b1220;
+  --panel: #101a2e;
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #eaeef7;
+  --muted: #9aa4c7;
+  --accent: #66d9ff;
+  --success: #32d583;
+  --warn: #fdb022;
+}
+
+button {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+input,
+select,
+textarea {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(102, 217, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 217, 255, 0.4);
+}
+
+/* Selection */
+::selection {
+  background: rgba(102, 217, 255, 0.3);
+  color: var(--text);
+}
+
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Reset default styles */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  padding: 0;
+}
+
+p {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

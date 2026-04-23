@@ -1,0 +1,47 @@
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #777;
+  transition: all 0.3s;
+}
+
+.status-dot-idle {
+  background: #777;
+}
+
+.status-dot-running {
+  background: var(--success);
+  box-shadow: 0 0 0 6px rgba(50, 213, 131, 0.2);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.status-dot-completed {
+  background: var(--success);
+}
+
+.status-dot-failed {
+  background: #ff4444;
+}
+
+.status-text {
+  font-size: 14px;
+  color: var(--text);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 6px rgba(50, 213, 131, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(50, 213, 131, 0.1);
+  }
+}
