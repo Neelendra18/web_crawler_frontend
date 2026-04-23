@@ -7,11 +7,13 @@ import {
   ProcessingState,
   BatchStatus,
   LogEntry,
-} from '@types/index'
+} from '@app-types/index'
 
 interface CrawlerStore extends CrawlerState {
   // Setters
+  setInputType: (inputType: 'url' | 'document') => void
   setWebsiteUrl: (url: string) => void
+  setDocumentFile: (file: File | null) => void
   setAuthType: (authType: AuthType) => void
   setAuthConfig: (config: AuthConfig) => void
   setFramework: (framework: 'Playwright' | 'Selenium') => void
@@ -22,7 +24,9 @@ interface CrawlerStore extends CrawlerState {
 }
 
 const initialCrawlerState: CrawlerState = {
+  inputType: 'url',
   websiteUrl: 'https://example.com',
+  documentFile: null,
   authType: 'None (Public)',
   authConfig: {},
   framework: 'Playwright',
@@ -34,7 +38,9 @@ const initialCrawlerState: CrawlerState = {
 export const useCrawlerStore = create<CrawlerStore>()(
   subscribeWithSelector(set => ({
     ...initialCrawlerState,
+    setInputType: (inputType: 'url' | 'document') => set({ inputType }),
     setWebsiteUrl: (url: string) => set({ websiteUrl: url }),
+    setDocumentFile: (file: File | null) => set({ documentFile: file }),
     setAuthType: (authType: AuthType) => set({ authType }),
     setAuthConfig: (authConfig: AuthConfig) => set({ authConfig }),
     setFramework: (framework: 'Playwright' | 'Selenium') => set({ framework }),
@@ -47,7 +53,9 @@ export const useCrawlerStore = create<CrawlerStore>()(
 
 // Memoized selectors for CrawlerStore
 export const selectCrawlerFormState = (state: CrawlerStore) => ({
+  inputType: state.inputType,
   websiteUrl: state.websiteUrl,
+  documentFile: state.documentFile,
   authType: state.authType,
   authConfig: state.authConfig,
   framework: state.framework,
@@ -96,15 +104,15 @@ export const useProcessingStore = create<ProcessingStore>()(
         logs: [
           {
             ...entry,
-          id: `log_${Date.now()}_${Math.random()}`,
-          timestamp: new Date(),
-        },
-        ...state.logs,
-      ].slice(0, 100), // Keep last 100 logs
-    })),
-  clearLogs: () => set({ logs: [] }),
-  reset: () => set(initialProcessingState),
-})),
+            id: `log_${Date.now()}_${Math.random()}`,
+            timestamp: new Date(),
+          },
+          ...state.logs,
+        ].slice(0, 100), // Keep last 100 logs
+      })),
+    clearLogs: () => set({ logs: [] }),
+    reset: () => set(initialProcessingState),
+  }))
 )
 
 // Memoized selectors for ProcessingStore

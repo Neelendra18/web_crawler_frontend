@@ -1,6 +1,8 @@
 // API Request/Response Types
 export interface CrawlRequest {
-  website_url: string
+  input_type: 'url' | 'document'
+  website_url?: string
+  document?: File
   auth_type: AuthType
   auth_config?: AuthConfig
   framework: 'Playwright' | 'Selenium'
@@ -39,7 +41,9 @@ export interface TestCase {
 
 // UI State Types
 export interface CrawlerState {
+  inputType: 'url' | 'document'
   websiteUrl: string
+  documentFile: File | null
   authType: AuthType
   authConfig: AuthConfig
   framework: 'Playwright' | 'Selenium'

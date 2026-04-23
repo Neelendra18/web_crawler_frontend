@@ -13,7 +13,8 @@ This document provides detailed guidance on the architecture, patterns, and best
 5. [Type Safety](#type-safety)
 6. [Performance Optimization](#performance-optimization)
 7. [Error Handling](#error-handling)
-8. [Testing Strategy](#testing-strategy)
+8. [Logging & Monitoring](#logging--monitoring)
+9. [Testing Strategy](#testing-strategy)
 
 ---
 
@@ -534,7 +535,78 @@ export const ErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ childre
 
 ---
 
-## Testing Strategy
+## Logging & Monitoring
+
+### Structured Logging
+
+The application uses a comprehensive logging system with `loglevel` for structured logging and Sentry for error tracking and performance monitoring.
+
+#### Logger Usage
+
+```tsx
+import { logger } from '@utils/logger'
+
+// User actions
+logger.userAction('start_crawl', 'CrawlerPage', {
+  websiteUrl: 'https://example.com',
+  framework: 'Playwright'
+})
+
+// API logging (automatic via interceptors)
+logger.apiRequest('POST', '/api/crawl', { url: 'https://example.com' })
+logger.apiResponse('POST', '/api/crawl', 200, 1250)
+
+// Errors with context
+logger.error('Failed to start crawl', error, {
+  component: 'CrawlerPage',
+  userId: '123'
+})
+
+// Component lifecycle
+logger.componentMount('CrawlerPage')
+logger.componentUnmount('CrawlerPage')
+```
+
+#### Log Levels
+
+- **DEBUG**: Detailed debugging information
+- **INFO**: General information about application flow
+- **WARN**: Warning messages for potential issues
+- **ERROR**: Error conditions that don't stop execution
+
+#### Sentry Integration
+
+Error tracking and performance monitoring is handled by Sentry:
+
+```tsx
+// Automatic error capture
+logger.error('Error message', error) // Automatically sent to Sentry
+
+// User context
+logger.setUser({ id: '123', email: 'user@example.com' })
+
+// Breadcrumbs for debugging
+logger.addBreadcrumb('User clicked start button', 'ui')
+```
+
+#### Configuration
+
+Logging is configured via environment variables:
+
+```bash
+# .env
+VITE_SENTRY_DSN=https://your-dsn@sentry.io/project-id
+VITE_ENABLE_DEBUG_MODE=true  # Enables debug logging in development
+```
+
+### Monitoring Strategy
+
+1. **Error Tracking**: All errors are automatically captured by Sentry with context
+2. **Performance Monitoring**: API response times and user interactions are tracked
+3. **User Analytics**: Key user actions are logged for usage analysis
+4. **API Monitoring**: All API calls are logged with timing and error information
+
+---
 
 ### Unit Tests
 

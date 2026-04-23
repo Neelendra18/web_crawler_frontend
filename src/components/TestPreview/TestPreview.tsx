@@ -1,4 +1,5 @@
-import { TestCase } from '@types/index'
+import React from 'react'
+import { TestCase } from '@app-types/index'
 import './TestPreview.css'
 
 interface TestPreviewProps {
@@ -6,7 +7,7 @@ interface TestPreviewProps {
   isLoading?: boolean
 }
 
-export const TestPreview: React.FC<TestPreviewProps> = ({ tests, isLoading = false }) => {
+const TestPreviewComponent: React.FC<TestPreviewProps> = ({ tests, isLoading = false }) => {
   return (
     <div className="test-preview">
       <h4 className="test-preview-title">Generated Test Cases</h4>
@@ -34,3 +35,5 @@ export const TestPreview: React.FC<TestPreviewProps> = ({ tests, isLoading = fal
     </div>
   )
 }
+
+export const TestPreview = React.memo(TestPreviewComponent)

@@ -1,4 +1,5 @@
-import { LogEntry } from '@types/index'
+import React from 'react'
+import { LogEntry } from '@app-types/index'
 import './LogViewer.css'
 
 interface LogViewerProps {
@@ -6,7 +7,7 @@ interface LogViewerProps {
   maxHeight?: number
 }
 
-export const LogViewer: React.FC<LogViewerProps> = ({ logs, maxHeight = 300 }) => {
+const LogViewerComponent: React.FC<LogViewerProps> = ({ logs, maxHeight = 300 }) => {
   return (
     <div className="log-viewer" style={{ maxHeight }}>
       {logs.length === 0 ? (
@@ -27,3 +28,5 @@ export const LogViewer: React.FC<LogViewerProps> = ({ logs, maxHeight = 300 }) =
     </div>
   )
 }
+
+export const LogViewer = React.memo(LogViewerComponent)

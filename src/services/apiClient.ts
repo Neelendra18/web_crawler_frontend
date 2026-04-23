@@ -1,9 +1,10 @@
-import axios, { AxiosInstance, AxiosError, CancelTokenSource } from 'axios'
+import axios, { AxiosInstance, AxiosError } from 'axios'
 import { config } from '@utils/config'
+import { logger } from '@utils/logger'
 
 class ApiClient {
   private client: AxiosInstance
-  private cancelTokens: Map<string, CancelTokenSource> = new Map()
+  private controllers: Map<string, AbortController> = new Map()
 
   constructor() {
     this.client = axios.create({
@@ -17,12 +18,20 @@ class ApiClient {
     // Request interceptor
     this.client.interceptors.request.use(
       req => {
-        if (config.enableDebugMode) {
-          console.log('API Request:', req.method?.toUpperCase(), req.url, req.data)
-        }
+        const startTime = Date.now()
+        logger.apiRequest(
+          req.method?.toUpperCase() || 'UNKNOWN',
+          req.url || 'unknown',
+          {
+            data: req.data,
+            headers: req.headers,
+            startTime
+          }
+        )
         return req
       },
       error => {
+        logger.apiError('UNKNOWN', 'unknown', error, { interceptor: 'request' })
         return Promise.reject(error)
       },
     )
@@ -30,13 +39,33 @@ class ApiClient {
     // Response interceptor
     this.client.interceptors.response.use(
       res => {
-        if (config.enableDebugMode) {
-          console.log('API Response:', res.status, res.data)
-        }
+        const startTime = (res.config as any).startTime || Date.now()
+        const duration = Date.now() - startTime
+        logger.apiResponse(
+          res.config.method?.toUpperCase() || 'UNKNOWN',
+          res.config.url || 'unknown',
+          res.status,
+          duration,
+          {
+            data: res.data,
+            headers: res.headers
+          }
+        )
         return res
       },
       (error: AxiosError) => {
-        console.error('API Error:', error.response?.status, error.response?.data)
+        const startTime = (error.config as any)?.startTime || Date.now()
+        const duration = Date.now() - startTime
+        logger.apiError(
+          error.config?.method?.toUpperCase() || 'UNKNOWN',
+          error.config?.url || 'unknown',
+          error,
+          {
+            status: error.response?.status,
+            data: error.response?.data,
+            duration
+          }
+        )
         return Promise.reject(error)
       },
     )
@@ -47,36 +76,36 @@ class ApiClient {
   }
 
   /**
-   * Create a cancel token for request cancellation
-   * Call cancel() to abort the request
+   * Create an AbortController for a cancellable request.
    */
-  public createCancelToken(key: string): CancelTokenSource {
-    const source = axios.CancelToken.source()
-    this.cancelTokens.set(key, source)
-    return source
+  public createAbortController(key: string): AbortController {
+    const controller = new AbortController()
+    this.controllers.set(key, controller)
+    return controller
   }
 
   /**
-   * Cancel a specific request by key
+   * Cancel a pending request by key.
    */
-  public cancelRequest(key: string, message: string = 'Request cancelled') {
-    const source = this.cancelTokens.get(key)
-    if (source) {
-      source.cancel(message)
-      this.cancelTokens.delete(key)
+  public cancelRequest(key: string) {
+    const controller = this.controllers.get(key)
+    if (controller) {
+      controller.abort()
+      this.controllers.delete(key)
     }
   }
 
   /**
-   * Cancel all pending requests
+   * Cancel all pending requests.
    */
-  public cancelAllRequests(message: string = 'All requests cancelled') {
-    this.cancelTokens.forEach(source => {
-      source.cancel(message)
+  public cancelAllRequests() {
+    this.controllers.forEach(controller => {
+      controller.abort()
     })
-    this.cancelTokens.clear()
+    this.controllers.clear()
   }
 }
 
-export const apiClient = new ApiClient().getClient()
-export const apiClientManager = new ApiClient()
+const apiClientManager = new ApiClient()
+export const apiClient = apiClientManager.getClient()
+export { apiClientManager }

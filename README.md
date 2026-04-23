@@ -1,6 +1,6 @@
 # Web Crawler Frontend - React Architecture
 
-A best-practice React TypeScript frontend application for web crawling and automated test case generation. This project follows industry-standard architecture patterns and best practices.
+A best-practice React TypeScript frontend application for web crawling and automated test case generation. This project supports two input methods: website URL crawling and document upload analysis.
 
 ## 🏗️ Architecture Overview
 
@@ -55,6 +55,32 @@ web_crawler_frontend/
 ├── .prettierrc              # Prettier configuration
 └── .env.example            # Example environment variables
 ```
+
+## ✨ Features
+
+### Dual Input Methods
+- **🌐 Website URL Crawling**: Crawl and analyze live websites for test case generation
+- **📄 Document Upload**: Upload PDF, BRD, DOC, DOCX, TXT, and MD files for analysis
+- **🔄 Seamless Switching**: Toggle between input methods with persistent form state
+
+### Advanced Crawling & Analysis
+- **🤖 AI-Powered Test Generation**: Automated test case creation from web content or documents
+- **🎯 Multi-Framework Support**: Generate tests for Playwright and Selenium
+- **💻 Language Options**: TypeScript and Python test output
+- **🔐 Authentication Handling**: Support for various auth methods (None, Form Login, SSO/OAuth)
+
+### Real-Time Processing
+- **📊 Live Progress Tracking**: Real-time pipeline status and metrics
+- **📝 Detailed Logging**: Comprehensive logs with structured error tracking
+- **⏸️ Cancellable Operations**: Abort running crawls with proper cleanup
+- **📈 Performance Monitoring**: API timing and response metrics
+
+### Developer Experience
+- **🏗️ Production-Ready Architecture**: Modular, scalable, and maintainable codebase
+- **🧪 Comprehensive Testing**: Unit tests with Vitest and React Testing Library
+- **📚 Full TypeScript**: Type-safe development with strict mode
+- **🎨 Modern UI**: Clean, responsive interface with dark theme
+- **📱 Mobile Friendly**: Responsive design for all screen sizes
 
 ## 📋 Key Architecture Decisions
 

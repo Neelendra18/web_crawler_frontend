@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react'
-import { useCrawlerStore, useProcessingStore } from '@store/crawlerStore'
+import React, { useState, useEffect, useRef } from 'react'
+import {
+  useCrawlerStore,
+  useProcessingStore,
+} from '@store/crawlerStore'
 import {
   Input,
   Select,
@@ -9,16 +12,49 @@ import {
   Batches,
   LogViewer,
   TestPreview,
+  FileUpload,
 } from '@components/index'
-import { PipelineStep, AuthType } from '@types/index'
+import { PipelineStep, AuthType } from '@app-types/index'
 import { crawlerService } from '@services/crawlerService'
+import { logger } from '@utils/logger'
 import './CrawlerPage.css'
 
 const CrawlerPage: React.FC = () => {
   const crawlerState = useCrawlerStore()
+  const crawlerActions = useCrawlerStore(state => ({
+    setInputType: state.setInputType,
+    setWebsiteUrl: state.setWebsiteUrl,
+    setDocumentFile: state.setDocumentFile,
+    setAuthType: state.setAuthType,
+    setAuthConfig: state.setAuthConfig,
+    setFramework: state.setFramework,
+    setLanguage: state.setLanguage,
+    setIsRunning: state.setIsRunning,
+    setError: state.setError,
+    reset: state.reset,
+  }))
   const processingState = useProcessingStore()
+  const processingActions = useProcessingStore(state => ({
+    clearLogs: state.clearLogs,
+    reset: state.reset,
+    setCurrentStep: state.setCurrentStep,
+    setPagesCrawled: state.setPagesCrawled,
+    setTestCases: state.setTestCases,
+    setGeneratedFiles: state.setGeneratedFiles,
+    addLog: state.addLog,
+  }))
+  const pollRef = useRef<number | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [statusMessage, setStatusMessage] = useState<string>('')
+
+  // Component lifecycle logging
+  useEffect(() => {
+    logger.componentMount('CrawlerPage')
+    return () => {
+      logger.componentUnmount('CrawlerPage')
+    }
+  }, [])
 
   const pipelineSteps: PipelineStep[] = [
     { id: 's1', name: 'Crawl Website (URL Discovery & Fetch)', active: false, completed: false },
@@ -38,58 +74,88 @@ const CrawlerPage: React.FC = () => {
     crawlerState.setAuthType(value as AuthType)
   }
 
+  const stopPolling = () => {
+    if (pollRef.current !== null) {
+      clearInterval(pollRef.current)
+      pollRef.current = null
+    }
+  }
+
   const handleStart = async () => {
+    logger.userAction('start_crawl', 'CrawlerPage', {
+      inputType: crawlerState.inputType,
+      websiteUrl: crawlerState.websiteUrl,
+      documentFile: crawlerState.documentFile?.name,
+      framework: crawlerState.framework,
+      language: crawlerState.language
+    })
+
     try {
+      stopPolling()
+      abortControllerRef.current?.abort()
+
+      const abortController = new AbortController()
+      abortControllerRef.current = abortController
+
       setIsLoading(true)
       setStatusMessage('Initializing crawl...')
-      processingState.clearLogs()
-      processingState.reset()
+      processingActions.clearLogs()
+      processingActions.reset()
 
       const request = {
-        website_url: crawlerState.websiteUrl,
+        input_type: crawlerState.inputType,
+        ...(crawlerState.inputType === 'url' && { website_url: crawlerState.websiteUrl }),
+        ...(crawlerState.inputType === 'document' && crawlerState.documentFile && { document: crawlerState.documentFile }),
         auth_type: crawlerState.authType,
         auth_config: crawlerState.authConfig,
         framework: crawlerState.framework as 'Playwright' | 'Selenium',
         language: crawlerState.language as 'TypeScript' | 'Python',
       }
 
-      processingState.addLog({
-        message: `Starting crawl for ${crawlerState.websiteUrl}`,
+      const inputDescription = crawlerState.inputType === 'url'
+        ? crawlerState.websiteUrl
+        : crawlerState.documentFile?.name || 'uploaded document'
+
+      processingActions.addLog({
+        message: `Starting crawl for ${inputDescription}`,
         level: 'info',
       })
 
-      const response = await crawlerService.startCrawl(request)
-      crawlerState.setIsRunning(true)
+      const response = await crawlerService.startCrawl(request, {
+        signal: abortController.signal,
+      })
+      crawlerActions.setIsRunning(true)
       setStatusMessage('Generating test cases')
-      processingState.addLog({
+      processingActions.addLog({
         message: `Job started with ID: ${response.id}`,
         level: 'success',
       })
 
-      // Poll for updates
-      const pollInterval = setInterval(async () => {
+      pollRef.current = window.setInterval(async () => {
         try {
-          const status = await crawlerService.getCrawlStatus(response.id)
+          const status = await crawlerService.getCrawlStatus(response.id, {
+            signal: abortController.signal,
+          })
 
-          processingState.setPagesCrawled(status.pages_crawled)
-          processingState.setTestCases(status.test_cases)
-          processingState.setGeneratedFiles(status.generated_files)
+          processingActions.setPagesCrawled(status.pages_crawled)
+          processingActions.setTestCases(status.test_cases)
+          processingActions.setGeneratedFiles(status.generated_files)
 
           if (status.status === 'completed') {
-            clearInterval(pollInterval)
-            crawlerState.setIsRunning(false)
+            stopPolling()
+            crawlerActions.setIsRunning(false)
             setStatusMessage('Completed')
-            processingState.setCurrentStep(5)
-            processingState.addLog({
+            processingActions.setCurrentStep(5)
+            processingActions.addLog({
               message: 'Crawl completed successfully',
               level: 'success',
             })
             setIsLoading(false)
           } else if (status.status === 'failed') {
-            clearInterval(pollInterval)
-            crawlerState.setIsRunning(false)
+            stopPolling()
+            crawlerActions.setIsRunning(false)
             setStatusMessage('Failed')
-            processingState.addLog({
+            processingActions.addLog({
               message: `Error: ${status.error}`,
               level: 'error',
             })
@@ -99,11 +165,15 @@ const CrawlerPage: React.FC = () => {
               Math.floor((status.progress || 0) / 20),
               processingState.totalSteps - 1,
             )
-            processingState.setCurrentStep(step)
+            processingActions.setCurrentStep(step)
           }
         } catch (error) {
+          if (error instanceof Error && error.name === 'CanceledError') {
+            return
+          }
+
           const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-          processingState.addLog({
+          processingActions.addLog({
             message: `Status check failed: ${errorMessage}. Backend may be unreachable.`,
             level: 'error',
           })
@@ -113,8 +183,15 @@ const CrawlerPage: React.FC = () => {
       const errorMessage = error instanceof Error
         ? `Network Error: ${error.message}. Is the backend running at http://localhost:8000?`
         : 'Network Error: Failed to start crawl. Is the backend running?'
-      crawlerState.setError(errorMessage)
-      processingState.addLog({
+      logger.error('Failed to start crawl', error instanceof Error ? error : new Error(errorMessage), {
+        component: 'CrawlerPage',
+        action: 'start_crawl',
+        inputType: crawlerState.inputType,
+        websiteUrl: crawlerState.inputType === 'url' ? crawlerState.websiteUrl : undefined,
+        documentFile: crawlerState.inputType === 'document' ? crawlerState.documentFile?.name : undefined
+      })
+      crawlerActions.setError(errorMessage)
+      processingActions.addLog({
         message: errorMessage,
         level: 'error',
       })
@@ -122,6 +199,13 @@ const CrawlerPage: React.FC = () => {
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    return () => {
+      stopPolling()
+      abortControllerRef.current?.abort()
+    }
+  }, [])
 
   const handleDownload = async () => {
     // Implement download logic
@@ -143,14 +227,36 @@ const CrawlerPage: React.FC = () => {
     <div className="crawler-app">
       {/* LEFT SIDEBAR */}
       <div className="crawler-left">
-        <h3 className="section-title">Website Input</h3>
-        <Input
-          label="Website URL"
-          value={crawlerState.websiteUrl}
-          onChange={e => crawlerState.setWebsiteUrl(e.target.value)}
-          placeholder="https://example.com"
+        <h3 className="section-title">Input Source</h3>
+        <Select
+          label="Input Type"
+          options={[
+            { label: 'Website URL', value: 'url' },
+            { label: 'Upload Document', value: 'document' },
+          ]}
+          value={crawlerState.inputType}
+          onChange={e => crawlerActions.setInputType(e.target.value as 'url' | 'document')}
           disabled={crawlerState.isRunning}
         />
+
+        {crawlerState.inputType === 'url' ? (
+          <Input
+            label="Website URL"
+            value={crawlerState.websiteUrl}
+            onChange={e => crawlerActions.setWebsiteUrl(e.target.value)}
+            placeholder="https://example.com"
+            disabled={crawlerState.isRunning}
+          />
+        ) : (
+          <FileUpload
+            label="Document File"
+            accept=".pdf,.doc,.docx,.txt,.md,.brd"
+            onFileSelect={crawlerActions.setDocumentFile}
+            selectedFile={crawlerState.documentFile}
+            disabled={crawlerState.isRunning}
+            maxSizeMB={50}
+          />
+        )}
 
         <h3 className="section-title" style={{ marginTop: '24px' }}>
           Target Application Authentication
@@ -231,7 +337,12 @@ const CrawlerPage: React.FC = () => {
           variant="primary"
           onClick={handleStart}
           isLoading={isLoading}
-          disabled={crawlerState.isRunning || !crawlerState.websiteUrl}
+          disabled={
+            crawlerState.isRunning ||
+            (crawlerState.inputType === 'url' && !crawlerState.websiteUrl) ||
+            (crawlerState.inputType === 'document' && !crawlerState.documentFile)
+          }
+          style={{ marginTop: '16px' }}
         >
           {crawlerState.isRunning ? 'Generating...' : 'Generate Test Cases'}
         </Button>

@@ -57,7 +57,13 @@ export function usePolling(
 }
 
 /**
- * Hook to handle async operations with loading and error states
+ * Hook to handle async operations with loading, success, and error states.
+ * Returns execute() to trigger the function, and status/data/error state.
+ *
+ * @template T Response value type
+ * @template E Error value type
+ * @param asyncFunction Function that returns a promise
+ * @param immediate Whether to execute immediately on mount
  */
 export function useAsync<T, E = string>(
   asyncFunction: () => Promise<T>,
@@ -92,7 +98,10 @@ export function useAsync<T, E = string>(
 }
 
 /**
- * Hook to manage form state
+ * Hook to manage form state, field changes, touched state, and validation errors.
+ *
+ * @template T Form values shape
+ * @param initialValues Initial field values
  */
 export function useForm<T extends Record<string, unknown>>(initialValues: T) {
   const [values, setValues] = React.useState(initialValues)

@@ -1,11 +1,12 @@
-import { PipelineStep } from '@types/index'
+import React from 'react'
+import { PipelineStep } from '@app-types/index'
 import './Pipeline.css'
 
 interface PipelineProps {
   steps: PipelineStep[]
 }
 
-export const Pipeline: React.FC<PipelineProps> = ({ steps }) => {
+const PipelineComponent: React.FC<PipelineProps> = ({ steps }) => {
   return (
     <div className="pipeline">
       {steps.map(step => (
@@ -22,3 +23,5 @@ export const Pipeline: React.FC<PipelineProps> = ({ steps }) => {
     </div>
   )
 }
+
+export const Pipeline = React.memo(PipelineComponent)

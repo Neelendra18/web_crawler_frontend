@@ -1,3 +1,4 @@
+import React from 'react'
 import './StatusIndicator.css'
 
 interface StatusIndicatorProps {
@@ -5,7 +6,7 @@ interface StatusIndicatorProps {
   label?: string
 }
 
-export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status, label }) => {
+const StatusIndicatorComponent: React.FC<StatusIndicatorProps> = ({ status, label }) => {
   const statusMap = {
     idle: 'Idle',
     running: 'Running',
@@ -20,3 +21,5 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status, label 
     </div>
   )
 }
+
+export const StatusIndicator = React.memo(StatusIndicatorComponent)

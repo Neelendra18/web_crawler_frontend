@@ -23,7 +23,10 @@
     "zustand": "^4.4.0",
     "react-router-dom": "^6.18.0",
     "clsx": "^2.0.0",
-    "date-fns": "^2.30.0"
+    "date-fns": "^2.30.0",
+    "loglevel": "^1.8.1",
+    "@sentry/react": "^7.80.0",
+    "@sentry/tracing": "^7.80.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
@@ -42,6 +45,7 @@
     "@testing-library/react": "^14.1.0",
     "@testing-library/jest-dom": "^6.1.0",
     "happy-dom": "^12.10.0",
-    "@types/node": "^20.10.0"
+    "@types/node": "^20.10.0",
+    "terser": "^5.27.0"
   }
 }

@@ -1,4 +1,4 @@
-import { BatchStatus } from '@types/index'
+import { BatchStatus } from '@app-types/index'
 import './Batch.css'
 
 interface BatchesProps {
