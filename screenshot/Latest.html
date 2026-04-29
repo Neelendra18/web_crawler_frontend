@@ -1,0 +1,2577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI-Driven Test Automation Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #08090d;
+    --surface: #0f1118;
+    --surface2: #161820;
+    --surface3: #1e2130;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(255,255,255,0.14);
+    --accent: #00e5a0;
+    --accent2: #5b6ef5;
+    --accent3: #ff6b6b;
+    --accent4: #f5a623;
+    --text: #f0f1f5;
+    --text-dim: #8b8fa8;
+    --text-muted: #4a4d60;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --glow: 0 0 40px rgba(0,229,160,0.12);
+    --shadow: 0 8px 32px rgba(0,0,0,0.6);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── GRID NOISE BACKGROUND ─── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* ─── LAYOUT ─── */
+  .app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: 240px; min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    position: sticky; top: 0; height: 100vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .logo-area {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 800;
+    letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .logo span { color: var(--accent); }
+
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1.5px;
+    padding: 0 8px; margin-bottom: 6px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: var(--radius-sm);
+    cursor: pointer; font-size: 14px; font-weight: 400;
+    color: var(--text-dim);
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    text-decoration: none;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active {
+    background: rgba(0,229,160,0.08);
+    color: var(--accent);
+    border-color: rgba(0,229,160,0.15);
+  }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-item .badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 10px; font-weight: 700;
+    padding: 2px 6px; border-radius: 10px;
+    font-family: 'DM Mono', monospace;
+  }
+  .nav-item .badge.warn { background: var(--accent4); }
+  .nav-item .badge.fail { background: var(--accent3); }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .user-card:hover { background: var(--surface3); }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: white;
+    flex-shrink: 0;
+  }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+  .token-bar-mini {
+    padding: 8px 10px 0;
+    font-size: 11px; color: var(--text-muted);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .mini-bar { height: 3px; background: var(--surface3); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+  .mini-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; width: 62%; }
+
+  /* ─── MAIN ─── */
+  .main { flex: 1; min-height: 100vh; overflow-y: auto; }
+
+  /* ─── TOPBAR ─── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(8,9,13,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 700;
+  }
+  .page-title .sub {
+    font-size: 13px; font-weight: 400;
+    color: var(--text-dim); font-family: 'DM Sans', sans-serif;
+    margin-left: 8px;
+  }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: all 0.15s; border: none; outline: none;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--accent); color: var(--bg);
+  }
+  .btn-primary:hover { background: #00ffb3; box-shadow: 0 0 20px rgba(0,229,160,0.4); }
+  .btn-ghost {
+    background: transparent; color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--border-hover); color: var(--text); background: var(--surface2); }
+  .btn-danger { background: rgba(255,107,107,0.15); color: var(--accent3); border: 1px solid rgba(255,107,107,0.25); }
+  .btn-danger:hover { background: rgba(255,107,107,0.25); }
+
+  .notif-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px; position: relative;
+    transition: all 0.15s;
+  }
+  .notif-btn:hover { border-color: var(--border-hover); background: var(--surface3); }
+  .notif-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent3); border: 1.5px solid var(--bg);
+  }
+
+  /* ─── CONTENT ─── */
+  .content { padding: 28px 32px; }
+
+  /* ─── SECTION HEADERS ─── */
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 700;
+  }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+  .section-count {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* ─── STAT CARDS ─── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  }
+  .stat-card.green::before { background: linear-gradient(90deg, var(--accent), transparent); }
+  .stat-card.blue::before { background: linear-gradient(90deg, var(--accent2), transparent); }
+  .stat-card.red::before { background: linear-gradient(90deg, var(--accent3), transparent); }
+  .stat-card.yellow::before { background: linear-gradient(90deg, var(--accent4), transparent); }
+  .stat-card:hover { border-color: var(--border-hover); transform: translateY(-1px); }
+  .stat-icon { font-size: 22px; margin-bottom: 10px; }
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px; font-weight: 800; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label { font-size: 12px; color: var(--text-dim); }
+  .stat-delta {
+    position: absolute; top: 20px; right: 20px;
+    font-size: 11px; font-family: 'DM Mono', monospace;
+    padding: 3px 7px; border-radius: 20px;
+  }
+  .stat-delta.up { background: rgba(0,229,160,0.1); color: var(--accent); }
+  .stat-delta.down { background: rgba(255,107,107,0.1); color: var(--accent3); }
+
+  /* ─── TWO COLUMN ─── */
+  .two-col { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; }
+  .card-action { margin-left: auto; }
+  .card-body { padding: 20px; }
+  .card-body.no-pad { padding: 0; }
+
+  /* ─── CRAWL INPUT ─── */
+  .input-group { margin-bottom: 14px; }
+  .input-label {
+    font-size: 12px; font-weight: 500; color: var(--text-dim);
+    margin-bottom: 6px; font-family: 'DM Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .input-field {
+    width: 100%; background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif;
+    outline: none; transition: all 0.15s;
+  }
+  .input-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,160,0.1); }
+  .input-field::placeholder { color: var(--text-muted); }
+
+  .drop-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 28px; text-align: center;
+    cursor: pointer; transition: all 0.2s;
+    background: var(--surface2);
+  }
+  .drop-zone:hover { border-color: var(--accent); background: rgba(0,229,160,0.03); }
+  .drop-zone-icon { font-size: 32px; margin-bottom: 8px; }
+  .drop-zone-text { font-size: 13px; color: var(--text-dim); }
+  .drop-zone-text strong { color: var(--accent); }
+  .drop-zone-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+  .format-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; justify-content: center; }
+  .pill {
+    background: var(--surface3); border: 1px solid var(--border);
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 10px; font-family: 'DM Mono', monospace;
+    color: var(--text-dim); text-transform: uppercase;
+  }
+
+  /* ─── TOKEN WIDGET ─── */
+  .token-widget {
+    background: linear-gradient(135deg, rgba(91,110,245,0.08), rgba(0,229,160,0.05));
+    border: 1px solid rgba(91,110,245,0.2);
+    border-radius: var(--radius); padding: 18px;
+    margin-bottom: 14px;
+  }
+  .token-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .token-label { font-size: 12px; color: var(--text-dim); }
+  .token-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; }
+  .token-bar { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+  .token-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+  .token-fill.ok { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .token-fill.warn { background: linear-gradient(90deg, var(--accent4), var(--accent3)); }
+  .warn-banner {
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.25);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    font-size: 12px; color: var(--accent4);
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* ─── PROGRESS ─── */
+  .crawl-job {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .crawl-job:last-child { border-bottom: none; }
+  .job-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .job-icon.running { background: rgba(0,229,160,0.1); }
+  .job-icon.done { background: rgba(91,110,245,0.1); }
+  .job-icon.failed { background: rgba(255,107,107,0.1); }
+  .job-icon.queued { background: rgba(255,255,255,0.05); }
+  .job-info { flex: 1; min-width: 0; }
+  .job-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .job-url { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .job-progress { width: 120px; flex-shrink: 0; }
+  .progress-bar { height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; margin-bottom: 4px; }
+  .progress-fill { height: 100%; border-radius: 2px; }
+  .progress-fill.running { background: var(--accent); animation: pulse-width 2s ease-in-out infinite; }
+  .progress-fill.done { background: var(--accent2); }
+  .progress-fill.failed { background: var(--accent3); }
+  @keyframes pulse-width { 0%,100% { opacity:1 } 50% { opacity:0.6 } }
+  .progress-label { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+  .status-chip {
+    padding: 3px 8px; border-radius: 20px; font-size: 11px;
+    font-family: 'DM Mono', monospace; white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .status-chip.running { background: rgba(0,229,160,0.1); color: var(--accent); }
+  .status-chip.done { background: rgba(91,110,245,0.1); color: var(--accent2); }
+  .status-chip.failed { background: rgba(255,107,107,0.1); color: var(--accent3); }
+  .status-chip.queued { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+
+  /* ─── TEST CASES TABLE ─── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { border-bottom: 1px solid var(--border); }
+  th {
+    padding: 10px 16px; text-align: left;
+    font-size: 11px; font-weight: 600;
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.8px; font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+  }
+  td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .tc-id { font-family: 'DM Mono', monospace; color: var(--text-muted); font-size: 12px; }
+  .tc-title { font-weight: 500; }
+  .tc-type {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; padding: 3px 8px; border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+  .tc-type.functional { background: rgba(91,110,245,0.1); color: var(--accent2); }
+  .tc-type.e2e { background: rgba(0,229,160,0.1); color: var(--accent); }
+  .tc-type.regression { background: rgba(245,166,35,0.1); color: var(--accent4); }
+  .tc-type.api { background: rgba(255,107,107,0.1); color: var(--accent3); }
+  .expand-row { cursor: pointer; }
+  .expand-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 0; }
+  .search-bar {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 8px 12px;
+    margin-bottom: 14px;
+  }
+  .search-bar input { background: none; border: none; outline: none; color: var(--text); font-size: 13px; flex: 1; font-family: 'DM Sans', sans-serif; }
+  .search-bar input::placeholder { color: var(--text-muted); }
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .filter-chip {
+    padding: 5px 12px; border-radius: 20px; font-size: 12px;
+    border: 1px solid var(--border); cursor: pointer;
+    transition: all 0.15s; font-family: 'DM Mono', monospace;
+    color: var(--text-dim);
+  }
+  .filter-chip:hover { border-color: var(--border-hover); color: var(--text); }
+  .filter-chip.active { background: rgba(0,229,160,0.08); border-color: rgba(0,229,160,0.25); color: var(--accent); }
+
+  /* ─── SCRIPT GENERATOR ─── */
+  .tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .tab {
+    padding: 12px 20px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border-bottom: 2px solid transparent;
+    color: var(--text-dim); margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .framework-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .fw-card {
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    padding: 14px; text-align: center; cursor: pointer; transition: all 0.15s;
+  }
+  .fw-card:hover { border-color: var(--border-hover); background: var(--surface2); }
+  .fw-card.selected { border-color: var(--accent); background: rgba(0,229,160,0.05); }
+  .fw-card .fw-icon { font-size: 24px; margin-bottom: 6px; }
+  .fw-card .fw-name { font-size: 12px; font-weight: 600; font-family: 'DM Mono', monospace; }
+  .fw-card .fw-lang { font-size: 11px; color: var(--text-muted); }
+
+  .code-preview {
+    background: #0a0b10; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 16px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    line-height: 1.6; color: #a8b2cc; overflow-x: auto;
+    max-height: 200px; overflow-y: auto;
+  }
+  .code-preview .kw { color: #c792ea; }
+  .code-preview .fn { color: #82aaff; }
+  .code-preview .str { color: #c3e88d; }
+  .code-preview .cm { color: #546e7a; font-style: italic; }
+
+  /* ─── EXECUTION DASHBOARD ─── */
+  .exec-row {
+    padding: 14px 20px; display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .exec-row:last-child { border-bottom: none; }
+  .exec-id { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); width: 80px; }
+  .exec-name { flex: 1; font-size: 13px; font-weight: 500; }
+  .exec-time { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+  .exec-result { display: flex; gap: 8px; align-items: center; font-size: 12px; font-family: 'DM Mono', monospace; }
+  .pass-count { color: var(--accent); }
+  .fail-count { color: var(--accent3); }
+
+  /* ─── AUDIT LOGS ─── */
+  .log-row {
+    padding: 10px 20px; display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 12px;
+  }
+  .log-time { font-family: 'DM Mono', monospace; color: var(--text-muted); width: 140px; flex-shrink: 0; }
+  .log-user { color: var(--accent2); width: 100px; flex-shrink: 0; }
+  .log-action { flex: 1; color: var(--text-dim); }
+  .log-action strong { color: var(--text); }
+  .log-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ─── RBAC TABLE ─── */
+  .rbac-grid { display: grid; grid-template-columns: 140px repeat(4, 1fr); }
+  .rbac-header {
+    text-align: center; padding: 10px 8px;
+    font-size: 11px; text-transform: uppercase;
+    font-family: 'DM Mono', monospace; color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .rbac-header:first-child { text-align: left; }
+  .rbac-feature {
+    padding: 12px 16px 12px 16px;
+    font-size: 13px; font-weight: 500;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex; align-items: center;
+  }
+  .rbac-cell {
+    display: flex; align-items: center; justify-content: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .rbac-check { font-size: 16px; }
+  .rbac-yes { color: var(--accent); }
+  .rbac-no { color: var(--surface3); }
+
+  /* ─── ACTIVITY FEED ─── */
+  .activity-item {
+    display: flex; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .act-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .act-text { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+  .act-text strong { color: var(--text); }
+  .act-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+  /* ─── MINI CHART BARS ─── */
+  .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 40px; }
+  .bar-col { flex: 1; border-radius: 3px 3px 0 0; }
+
+  /* ─── CONFIRM MODAL ─── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px;
+    width: 420px; max-width: 90vw;
+    box-shadow: var(--shadow);
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .modal-body { font-size: 14px; color: var(--text-dim); line-height: 1.6; margin-bottom: 24px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* ─── GLOW PING ─── */
+  .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); position: relative; }
+  .live-dot::after {
+    content: ''; position: absolute; inset: -3px; border-radius: 50%;
+    background: var(--accent); opacity: 0.3; animation: ping 1.5s ease-in-out infinite;
+  }
+  @keyframes ping { 0%,100% { transform: scale(1); opacity:0.3; } 50% { transform: scale(2); opacity:0; } }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+
+  /* ─── SELECT ─── */
+  select {
+    appearance: none;
+    background: var(--surface2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8fa8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+    border: 1px solid var(--border);
+    color: var(--text); padding: 8px 32px 8px 12px;
+    border-radius: var(--radius-sm); font-size: 13px;
+    font-family: 'DM Sans', sans-serif; cursor: pointer; outline: none;
+  }
+  select:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+
+  /* ─── CHIP TOGGLE ─── */
+  .chip-toggle { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip-opt {
+    padding: 6px 14px; border-radius: 20px; font-size: 12px;
+    border: 1px solid var(--border); cursor: pointer;
+    transition: all 0.15s; font-family: 'DM Mono', monospace;
+    color: var(--text-dim);
+  }
+  .chip-opt.sel { background: rgba(91,110,245,0.12); border-color: rgba(91,110,245,0.35); color: var(--accent2); }
+
+  /* ─── ROLE BADGE ─── */
+  .role-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 20px; font-size: 11px;
+    font-family: 'DM Mono', monospace;
+  }
+  .role-badge.admin { background: rgba(245,166,35,0.1); color: var(--accent4); }
+  .role-badge.qa { background: rgba(91,110,245,0.1); color: var(--accent2); }
+  .role-badge.dev { background: rgba(0,229,160,0.1); color: var(--accent); }
+  .role-badge.viewer { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+
+  .sep { height: 28px; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
+
+  /* ══════════════════════════════════════
+     AUTH LAYER — LOGIN SCREEN
+  ══════════════════════════════════════ */
+  #auth-gate {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+    min-height: 100vh;
+  }
+  #auth-gate::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.02) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+  }
+  #auth-gate::after {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(91,110,245,0.06) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    pointer-events: none;
+  }
+  .login-card {
+    position: relative; z-index: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 44px 48px;
+    width: 440px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    animation: loginSlide 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes loginSlide {
+    from { opacity:0; transform: translateY(24px) scale(0.98); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .login-logo {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 32px;
+  }
+  .login-logo-mark {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 0 24px rgba(0,229,160,0.25);
+  }
+  .login-logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px; font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .login-logo-text span { color: var(--accent); }
+  .login-tagline {
+    font-size: 12px; color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+  .login-heading {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .login-subheading {
+    font-size: 13px; color: var(--text-dim);
+    margin-bottom: 28px; line-height: 1.5;
+  }
+  .login-field { margin-bottom: 16px; }
+  .login-label {
+    font-size: 11px; font-weight: 600;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin-bottom: 7px; display: block;
+  }
+  .login-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: all 0.2s;
+  }
+  .login-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,160,0.1);
+    background: rgba(0,229,160,0.02);
+  }
+  .login-input::placeholder { color: var(--text-muted); }
+  .login-input.err { border-color: var(--accent3); box-shadow: 0 0 0 3px rgba(255,107,107,0.1); }
+  .login-error {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 12px; color: var(--accent3);
+    margin-bottom: 16px; display: none;
+    align-items: center; gap: 8px;
+  }
+  .login-error.show { display: flex; }
+  .login-btn {
+    width: 100%; padding: 13px;
+    background: var(--accent); color: var(--bg);
+    border: none; border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    letter-spacing: 0.2px;
+    margin-top: 4px;
+  }
+  .login-btn:hover { background: #00ffb3; box-shadow: 0 0 28px rgba(0,229,160,0.4); }
+  .login-btn:active { transform: scale(0.99); }
+  .login-btn.loading { opacity: 0.7; cursor: not-allowed; }
+  .login-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0; color: var(--text-muted); font-size: 12px;
+  }
+  .login-divider::before, .login-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .demo-accounts {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .demo-account {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .demo-account:hover { border-color: var(--border-hover); background: var(--surface3); }
+  .demo-account-left { display: flex; align-items: center; gap: 10px; }
+  .demo-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: white; flex-shrink: 0;
+  }
+  .demo-av-admin { background: linear-gradient(135deg, #f5a623, #e8870a); }
+  .demo-av-qa { background: linear-gradient(135deg, var(--accent2), #3d52d5); }
+  .demo-av-dev { background: linear-gradient(135deg, var(--accent), #00b37a); }
+  .demo-account-name { font-size: 13px; font-weight: 500; }
+  .demo-account-email { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+  .demo-role-chip {
+    font-size: 10px; font-weight: 700;
+    padding: 3px 8px; border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .demo-role-chip.admin { background: rgba(245,166,35,0.12); color: var(--accent4); }
+  .demo-role-chip.qa    { background: rgba(91,110,245,0.12); color: var(--accent2); }
+  .demo-role-chip.dev   { background: rgba(0,229,160,0.1); color: var(--accent); }
+  .login-footer {
+    margin-top: 24px; text-align: center;
+    font-size: 11px; color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+  .login-footer strong { color: var(--text-dim); }
+
+  /* ── ROLE-GATED NAV ITEMS ── */
+  .nav-item[data-roles] { transition: all 0.15s; }
+
+  /* ── PERMISSION DENIED TOAST ── */
+  .perm-toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: rgba(255,107,107,0.12);
+    border: 1px solid rgba(255,107,107,0.3);
+    color: var(--accent3);
+    padding: 11px 20px; border-radius: 10px;
+    font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+    z-index: 9998; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none; white-space: nowrap;
+  }
+  .perm-toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── ROLE ACCESS BANNER ── */
+  .access-banner {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 20px;
+    margin: 16px 32px 0;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+  .access-banner.restricted {
+    background: rgba(255,107,107,0.07);
+    border: 1px solid rgba(255,107,107,0.18);
+    color: var(--accent3);
+  }
+
+  /* ── TOPBAR LOGOUT / USER BADGE ── */
+  .topbar-user {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 12px 6px 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px; cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .topbar-user:hover { border-color: var(--border-hover); background: var(--surface3); }
+  .topbar-user .t-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: white;
+  }
+  .topbar-user .t-name { font-size: 13px; font-weight: 500; }
+  .topbar-user .t-role {
+    font-size: 10px; color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+  .user-dropdown {
+    position: absolute; top: calc(100% + 8px); right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 8px;
+    min-width: 200px;
+    box-shadow: var(--shadow);
+    display: none; z-index: 500;
+    animation: dropIn 0.18s ease;
+  }
+  @keyframes dropIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+  .topbar-user.open .user-dropdown { display: block; }
+  .dd-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 8px;
+    font-size: 13px; cursor: pointer; color: var(--text-dim);
+    transition: all 0.12s;
+  }
+  .dd-item:hover { background: var(--surface2); color: var(--text); }
+  .dd-item.danger { color: var(--accent3); }
+  .dd-item.danger:hover { background: rgba(255,107,107,0.08); }
+  .dd-sep { height: 1px; background: var(--border); margin: 6px 0; }
+
+  /* ── LOCKED OVERLAY on restricted pages ── */
+  .locked-page {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 60vh; gap: 14px; color: var(--text-dim);
+    text-align: center; padding: 40px;
+  }
+  .locked-icon { font-size: 48px; margin-bottom: 4px; }
+  .locked-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 700; color: var(--text);
+  }
+  .locked-sub { font-size: 14px; max-width: 380px; line-height: 1.6; }
+  .locked-chip {
+    padding: 5px 14px; border-radius: 20px; font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.2);
+    color: var(--accent3);
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     AUTH GATE — LOGIN SCREEN
+════════════════════════════════════════════ -->
+<div id="auth-gate">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-mark">🕷</div>
+      <div>
+        <div class="login-logo-text">Crawl<span>AI</span></div>
+        <div class="login-tagline">Enterprise Test Automation</div>
+      </div>
+    </div>
+
+    <div class="login-heading">Welcome back</div>
+    <div class="login-subheading">Sign in to your workspace to continue.</div>
+
+    <div class="login-error" id="login-error">
+      <span>⚠</span> <span id="login-error-msg">Invalid credentials. Please try again.</span>
+    </div>
+
+    <div class="login-field">
+      <label class="login-label" for="l-email">Email address</label>
+      <input class="login-input" id="l-email" type="email" placeholder="you@company.com" autocomplete="email"/>
+    </div>
+    <div class="login-field">
+      <label class="login-label" for="l-pass">Password</label>
+      <input class="login-input" id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign in</button>
+
+    <div class="login-divider">or sign in with a demo account</div>
+
+    <div class="demo-accounts">
+      <div class="demo-account" onclick="demoLogin('admin')">
+        <div class="demo-account-left">
+          <div class="demo-avatar demo-av-admin">AK</div>
+          <div>
+            <div class="demo-account-name">Arjun Kulkarni</div>
+            <div class="demo-account-email">arjun@crawliq.io</div>
+          </div>
+        </div>
+        <span class="demo-role-chip admin">Admin</span>
+      </div>
+      <div class="demo-account" onclick="demoLogin('qa')">
+        <div class="demo-account-left">
+          <div class="demo-avatar demo-av-qa">MS</div>
+          <div>
+            <div class="demo-account-name">Meera Sharma</div>
+            <div class="demo-account-email">meera@crawliq.io</div>
+          </div>
+        </div>
+        <span class="demo-role-chip qa">QA Engineer</span>
+      </div>
+      <div class="demo-account" onclick="demoLogin('dev')">
+        <div class="demo-account-left">
+          <div class="demo-avatar demo-av-dev">RJ</div>
+          <div>
+            <div class="demo-account-name">Rohan Joshi</div>
+            <div class="demo-account-email">rohan@crawliq.io</div>
+          </div>
+        </div>
+        <span class="demo-role-chip dev">Developer</span>
+      </div>
+    </div>
+
+    <div class="login-footer">
+      Protected by <strong>CrawlIQ Enterprise SSO</strong> · v2.4.1
+    </div>
+  </div>
+</div>
+
+<!-- Permission Denied Toast -->
+<div class="perm-toast" id="perm-toast">
+  <span>🔒</span> <span id="perm-toast-msg">You don't have permission to access this feature.</span>
+</div>
+
+
+
+<div class="app">
+
+  <!-- ═══════════════════════════ SIDEBAR ═══════════════════════════ -->
+  <aside class="sidebar">
+    <div class="logo-area">
+      <div class="logo">
+        <div class="logo-icon">🕷</div>
+        Crawl<span>AI</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <a class="nav-item active" onclick="showView('dashboard')">
+        <span class="icon">⬛</span> Dashboard
+      </a>
+      <a class="nav-item" onclick="showView('audit')">
+        <span class="icon">📋</span> Audit Logs
+        <span class="badge warn">3</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Crawler</div>
+      <a class="nav-item" onclick="showView('crawl-input')">
+        <span class="icon">🔗</span> New Crawl
+      </a>
+      <a class="nav-item" onclick="showView('progress')">
+        <span class="icon">⚡</span> Live Jobs
+        <span class="badge">2</span>
+      </a>
+      <a class="nav-item" onclick="showView('tokens')">
+        <span class="icon">🪙</span> Token Usage
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Testing</div>
+      <a class="nav-item" onclick="showView('testcases')">
+        <span class="icon">🧪</span> Test Cases
+      </a>
+      <a class="nav-item" onclick="showView('scripts')">
+        <span class="icon">⚙️</span> Script Gen
+      </a>
+      <a class="nav-item" onclick="showView('cicd')">
+        <span class="icon">🚀</span> CI/CD Runs
+        <span class="badge fail">1</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Admin</div>
+      <a class="nav-item" onclick="showView('rbac')">
+        <span class="icon">🔐</span> Access Control
+      </a>
+      <a class="nav-item" onclick="showView('auth')">
+        <span class="icon">👤</span> Profile
+      </a>
+    </div>
+
+    <!-- <div class="sidebar-footer"> -->
+      <!-- <div class="user-card" onclick="showView('auth')"> -->
+        <!-- <div class="avatar">AK</div> -->
+        <!-- <div class="user-info"> -->
+          <!-- <div class="user-name">Arjun Kulkarni</div> -->
+          <!-- <div class="user-role">admin</div> -->
+        <!-- </div> -->
+        <!-- <span style="color:var(--text-muted);font-size:16px">⋯</span> -->
+      <!-- </div> -->
+      <!-- <div class="token-bar-mini"> -->
+        <!-- <span>Tokens</span><span style="color:var(--text);font-family:'DM Mono',monospace">62k / 100k</span> -->
+      <!-- </div> -->
+      <!-- <div class="mini-bar"><div class="mini-fill"></div></div> -->
+    <!-- </div> -->
+  </aside>
+
+  <!-- ═══════════════════════════ MAIN ═══════════════════════════ -->
+  <div class="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div id="view-dashboard">
+      <div class="topbar">
+        <span class="page-title">Dashboard <span class="sub">Good morning, Arjun 👋</span></span>
+        <div class="topbar-right">
+          <div class="notif-btn" title="Notifications">🔔<div class="notif-dot"></div></div>
+          <button class="btn btn-primary" onclick="showView('crawl-input')">＋ New Crawl</button>
+        </div>
+      </div>
+      <div class="content">
+
+        <div class="stats-grid">
+          <div class="stat-card green">
+            <div class="stat-icon">🕷</div>
+            <div class="stat-value">128</div>
+            <div class="stat-label">Total Crawls</div>
+            <div class="stat-delta up">↑ 14%</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-icon">🧪</div>
+            <div class="stat-value">4,392</div>
+            <div class="stat-label">Test Cases Generated</div>
+            <div class="stat-delta up">↑ 32%</div>
+          </div>
+          <div class="stat-card yellow">
+            <div class="stat-icon">🚀</div>
+            <div class="stat-value">97</div>
+            <div class="stat-label">CI/CD Executions</div>
+            <div class="stat-delta up">↑ 8%</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-value">5</div>
+            <div class="stat-label">Failed Runs</div>
+            <div class="stat-delta down">↑ 2</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <!-- Recent Crawls -->
+          <div class="card">
+            <div class="card-header">
+              <span style="color:var(--accent)">⚡</span>
+              <span class="card-title">Active Crawl Jobs</span>
+              <span style="margin-left:10px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)"><span class="live-dot"></span> LIVE</span>
+              <a class="btn btn-ghost card-action" style="font-size:12px;padding:5px 10px" onclick="showView('progress')">View all →</a>
+            </div>
+            <div class="card-body no-pad">
+              <div class="crawl-job">
+                <div class="job-icon running">🌐</div>
+                <div class="job-info">
+                  <div class="job-name">checkout-flow-crawl</div>
+                  <div class="job-url">https://shop.acme.com/checkout</div>
+                </div>
+                <div class="job-progress">
+                  <div class="progress-bar"><div class="progress-fill running" style="width:73%"></div></div>
+                  <div class="progress-label">73% · 4.2k tokens</div>
+                </div>
+                <div class="status-chip running">Running</div>
+              </div>
+              <div class="crawl-job">
+                <div class="job-icon running">📄</div>
+                <div class="job-info">
+                  <div class="job-name">api-docs-upload</div>
+                  <div class="job-url">swagger-openapi-v3.pdf</div>
+                </div>
+                <div class="job-progress">
+                  <div class="progress-bar"><div class="progress-fill running" style="width:41%"></div></div>
+                  <div class="progress-label">41% · 1.8k tokens</div>
+                </div>
+                <div class="status-chip running">Running</div>
+              </div>
+              <div class="crawl-job">
+                <div class="job-icon done">🌐</div>
+                <div class="job-info">
+                  <div class="job-name">login-regression-v2</div>
+                  <div class="job-url">https://app.acme.com/login</div>
+                </div>
+                <div class="job-progress">
+                  <div class="progress-bar"><div class="progress-fill done" style="width:100%"></div></div>
+                  <div class="progress-label">Done · 9.1k tokens</div>
+                </div>
+                <div class="status-chip done">Completed</div>
+              </div>
+              <div class="crawl-job">
+                <div class="job-icon failed">⚠️</div>
+                <div class="job-info">
+                  <div class="job-name">dashboard-smoke</div>
+                  <div class="job-url">https://app.acme.com/dashboard</div>
+                </div>
+                <div class="job-progress">
+                  <div class="progress-bar"><div class="progress-fill failed" style="width:28%"></div></div>
+                  <div class="progress-label">Failed at 28%</div>
+                </div>
+                <div class="status-chip failed">Failed</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Activity & quick stats -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-header">
+                <span style="color:var(--accent2)">📊</span>
+                <span class="card-title">Test Run Stats</span>
+              </div>
+              <div class="card-body">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px">
+                  <span style="font-size:12px;color:var(--text-muted)">Last 7 days</span>
+                  <span style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--accent)">94.2%<span style="font-size:13px;color:var(--text-dim);font-weight:400"> pass</span></span>
+                </div>
+                <div class="mini-chart" style="margin-bottom:12px">
+                  <div class="bar-col" style="height:60%;background:var(--accent);opacity:0.5"></div>
+                  <div class="bar-col" style="height:80%;background:var(--accent);opacity:0.6"></div>
+                  <div class="bar-col" style="height:55%;background:var(--accent);opacity:0.5"></div>
+                  <div class="bar-col" style="height:90%;background:var(--accent);opacity:0.7"></div>
+                  <div class="bar-col" style="height:70%;background:var(--accent3);opacity:0.8"></div>
+                  <div class="bar-col" style="height:100%;background:var(--accent);opacity:0.9"></div>
+                  <div class="bar-col" style="height:85%;background:var(--accent2)"></div>
+                </div>
+                <div style="display:flex;gap:16px">
+                  <div>
+                    <div style="font-size:11px;color:var(--text-muted)">Passed</div>
+                    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--accent)">91</div>
+                  </div>
+                  <div>
+                    <div style="font-size:11px;color:var(--text-muted)">Failed</div>
+                    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--accent3)">5</div>
+                  </div>
+                  <div>
+                    <div style="font-size:11px;color:var(--text-muted)">Skipped</div>
+                    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text-muted)">1</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <span style="color:var(--accent4)">📡</span>
+                <span class="card-title">Recent Activity</span>
+              </div>
+              <div class="card-body">
+                <div class="activity-item">
+                  <div class="act-dot" style="background:var(--accent)"></div>
+                  <div>
+                    <div class="act-text"><strong>login-regression-v2</strong> completed — 312 test cases</div>
+                    <div class="act-time">2 min ago</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="act-dot" style="background:var(--accent2)"></div>
+                  <div>
+                    <div class="act-text">Playwright script downloaded by <strong>meera@acme.com</strong></div>
+                    <div class="act-time">18 min ago</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="act-dot" style="background:var(--accent3)"></div>
+                  <div>
+                    <div class="act-text"><strong>dashboard-smoke</strong> failed at 28% — timeout error</div>
+                    <div class="act-time">1 hr ago</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── CRAWL INPUT ── -->
+    <div id="view-crawl-input" style="display:none">
+      <div class="topbar">
+        <span class="page-title">New Crawl <span class="sub">Story 3: Crawl Input UI</span></span>
+        <div class="topbar-right">
+          <button class="btn btn-ghost" onclick="showView('dashboard')">← Back</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="two-col">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-header">
+                <span style="color:var(--accent)">🔗</span>
+                <span class="card-title">Crawl Configuration</span>
+              </div>
+              <div class="card-body">
+                <div class="input-group">
+                  <div class="input-label">Target URL</div>
+                  <input class="input-field" type="url" placeholder="https://yourapp.com/feature" value="https://shop.acme.com/checkout"/>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+                  <div class="input-group" style="margin-bottom:0">
+                    <div class="input-label">Crawl Depth</div>
+                    <select class="input-field" style="appearance:none">
+                      <option>1 — Shallow</option>
+                      <option selected>2 — Standard</option>
+                      <option>3 — Deep</option>
+                    </select>
+                  </div>
+                  <div class="input-group" style="margin-bottom:0">
+                    <div class="input-label">Mode</div>
+                    <select class="input-field" style="appearance:none">
+                      <option>Full Page</option>
+                      <option selected>User Flow</option>
+                      <option>API Only</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="input-label" style="margin-bottom:8px">Upload Documents (optional)</div>
+                <div class="drop-zone" onclick="">
+                  <div class="drop-zone-icon">☁️</div>
+                  <div class="drop-zone-text">Drag & drop files or <strong>browse</strong></div>
+                  <div class="drop-zone-sub">PDF · XLSX · DOCX · PNG · JPG</div>
+                  <div class="format-pills">
+                    <span class="pill">PDF</span><span class="pill">Excel</span>
+                    <span class="pill">Word</span><span class="pill">Images</span>
+                  </div>
+                </div>
+
+                <div style="margin-top:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;display:flex;align-items:center;gap:10px">
+                  <span>📄</span>
+                  <div style="flex:1">
+                    <div style="font-size:13px;font-weight:500">swagger-openapi-v3.pdf</div>
+                    <div style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace">2.4 MB · uploading…</div>
+                    <div class="progress-bar" style="margin-top:6px"><div class="progress-fill running" style="width:64%"></div></div>
+                  </div>
+                  <span style="color:var(--text-muted);cursor:pointer">✕</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <span style="color:var(--accent4)">⚙️</span>
+                <span class="card-title">Advanced Options</span>
+              </div>
+              <div class="card-body">
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+                    <input type="checkbox" checked style="accent-color:var(--accent)"/>
+                    Include authentication flows
+                  </label>
+                  <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+                    <input type="checkbox" checked style="accent-color:var(--accent)"/>
+                    Generate negative test cases
+                  </label>
+                  <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+                    <input type="checkbox" style="accent-color:var(--accent)"/>
+                    Screenshot each step
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Token + Confirm -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-header">
+                <span style="color:var(--accent2)">🪙</span>
+                <span class="card-title">Token Estimation</span>
+              </div>
+              <div class="card-body">
+                <div class="token-widget">
+                  <div class="token-row">
+                    <div>
+                      <div class="token-label">Estimated Usage</div>
+                      <div class="token-val">~12,400</div>
+                    </div>
+                    <div style="text-align:right">
+                      <div class="token-label">Available</div>
+                      <div class="token-val" style="color:var(--accent)">38,000</div>
+                    </div>
+                  </div>
+                  <div class="token-bar"><div class="token-fill ok" style="width:32%"></div></div>
+                  <div style="font-size:11px;color:var(--text-muted);margin-top:6px;font-family:'DM Mono',monospace">32% of monthly quota</div>
+                </div>
+
+                <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px;font-size:13px;margin-bottom:14px">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                    <span style="color:var(--text-dim)">URL crawl</span>
+                    <span style="font-family:'DM Mono',monospace">~8,200</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                    <span style="color:var(--text-dim)">Document parsing</span>
+                    <span style="font-family:'DM Mono',monospace">~3,600</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:6px;margin-top:6px">
+                    <span style="font-weight:600">Total estimate</span>
+                    <span style="font-family:'DM Mono',monospace;color:var(--accent)">~12,400</span>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" onclick="openModal()">
+                  🚀 Start Crawl
+                </button>
+                <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:8px">A confirmation dialog will appear</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <span style="color:var(--accent)">💡</span>
+                <span class="card-title">Tips</span>
+              </div>
+              <div class="card-body" style="font-size:13px;color:var(--text-dim);line-height:1.7">
+                <div style="margin-bottom:8px">🔗 Provide a specific page URL for targeted test generation</div>
+                <div style="margin-bottom:8px">📄 Attach Swagger/OpenAPI docs for API test cases</div>
+                <div>⚡ Shallow crawl uses ~40% fewer tokens</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROGRESS ── -->
+    <div id="view-progress" style="display:none">
+      <div class="topbar">
+        <span class="page-title">Live Jobs <span style="margin-left:10px;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted)"><span class="live-dot"></span> Polling every 3s</span></span>
+        <div class="topbar-right">
+          <button class="btn btn-ghost" onclick="showView('dashboard')">← Dashboard</button>
+          <button class="btn btn-primary" onclick="showView('crawl-input')">＋ New Crawl</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <span style="color:var(--accent)">⚡</span>
+            <span class="card-title">All Crawl Jobs</span>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <select style="font-size:12px;padding:6px 28px 6px 10px">
+                <option>All status</option>
+                <option>Running</option>
+                <option>Completed</option>
+                <option>Failed</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body no-pad">
+            <div class="crawl-job">
+              <div class="job-icon running">🌐</div>
+              <div class="job-info">
+                <div class="job-name">checkout-flow-crawl</div>
+                <div class="job-url">https://shop.acme.com/checkout · depth:2 · user-flow mode</div>
+              </div>
+              <div class="job-progress">
+                <div class="progress-bar"><div class="progress-fill running" style="width:73%"></div></div>
+                <div class="progress-label">73% · 4.2k tokens</div>
+              </div>
+              <div class="status-chip running">Running</div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;margin-left:4px">Pause</button>
+            </div>
+            <div class="crawl-job">
+              <div class="job-icon running">📄</div>
+              <div class="job-info">
+                <div class="job-name">api-docs-upload</div>
+                <div class="job-url">swagger-openapi-v3.pdf · document parse</div>
+              </div>
+              <div class="job-progress">
+                <div class="progress-bar"><div class="progress-fill running" style="width:41%"></div></div>
+                <div class="progress-label">41% · 1.8k tokens</div>
+              </div>
+              <div class="status-chip running">Running</div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;margin-left:4px">Pause</button>
+            </div>
+            <div class="crawl-job">
+              <div class="job-icon done">🌐</div>
+              <div class="job-info">
+                <div class="job-name">login-regression-v2</div>
+                <div class="job-url">https://app.acme.com/login · depth:1 · full-page</div>
+              </div>
+              <div class="job-progress">
+                <div class="progress-bar"><div class="progress-fill done" style="width:100%"></div></div>
+                <div class="progress-label">Done · 9.1k tokens · 3m 22s</div>
+              </div>
+              <div class="status-chip done">Completed</div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;margin-left:4px" onclick="showView('testcases')">View →</button>
+            </div>
+            <div class="crawl-job">
+              <div class="job-icon failed">⚠️</div>
+              <div class="job-info">
+                <div class="job-name">dashboard-smoke</div>
+                <div class="job-url">https://app.acme.com/dashboard · timeout at step 7</div>
+              </div>
+              <div class="job-progress">
+                <div class="progress-bar"><div class="progress-fill failed" style="width:28%"></div></div>
+                <div class="progress-label">Failed at 28% · ERR_TIMEOUT</div>
+              </div>
+              <div class="status-chip failed">Failed</div>
+              <button class="btn btn-danger" style="font-size:12px;padding:5px 10px;margin-left:4px">Retry</button>
+            </div>
+            <div class="crawl-job">
+              <div class="job-icon queued">⏳</div>
+              <div class="job-info">
+                <div class="job-name">payment-gateway-e2e</div>
+                <div class="job-url">https://shop.acme.com/pay · queued behind 2 jobs</div>
+              </div>
+              <div class="job-progress">
+                <div class="progress-bar"><div class="progress-fill" style="width:0%;background:var(--surface3)"></div></div>
+                <div class="progress-label">Waiting…</div>
+              </div>
+              <div class="status-chip queued">Queued</div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;margin-left:4px">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status log -->
+        <div class="card">
+          <div class="card-header">
+            <span style="color:var(--accent2)">📜</span>
+            <span class="card-title">Activity Log — checkout-flow-crawl</span>
+          </div>
+          <div class="card-body" style="font-family:'DM Mono',monospace;font-size:12px;line-height:1.8;color:var(--text-dim)">
+            <div><span style="color:var(--text-muted)">[14:32:01]</span> <span style="color:var(--accent)">INFO</span> Crawl started for https://shop.acme.com/checkout</div>
+            <div><span style="color:var(--text-muted)">[14:32:04]</span> <span style="color:var(--accent)">INFO</span> Discovered 14 interactive elements on page</div>
+            <div><span style="color:var(--text-muted)">[14:32:08]</span> <span style="color:var(--accent)">INFO</span> Generating test cases for checkout form validation</div>
+            <div><span style="color:var(--text-muted)">[14:32:15]</span> <span style="color:var(--accent2)">STEP</span> Navigated to /checkout/review — 8 elements found</div>
+            <div><span style="color:var(--text-muted)">[14:32:22]</span> <span style="color:var(--accent2)">STEP</span> Navigated to /checkout/payment — 12 elements found</div>
+            <div><span style="color:var(--text-muted)">[14:32:30]</span> <span style="color:var(--accent)">INFO</span> 73% complete · 4,218 tokens consumed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TOKENS ── -->
+    <div id="view-tokens" style="display:none">
+      <div class="topbar">
+        <span class="page-title">Token Management <span class="sub">Story 5</span></span>
+        <div class="topbar-right">
+          <button class="btn btn-primary">+ Buy Tokens</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="three-col">
+          <div class="stat-card green">
+            <div class="stat-icon">🪙</div>
+            <div class="stat-value">38k</div>
+            <div class="stat-label">Available Tokens</div>
+          </div>
+          <div class="stat-card yellow">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value">62k</div>
+            <div class="stat-label">Used This Month</div>
+            <div class="stat-delta down">62% quota</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value">100k</div>
+            <div class="stat-label">Monthly Quota</div>
+          </div>
+        </div>
+
+        <div class="warn-banner">
+          ⚠️ You've used 62% of your monthly token quota. Consider upgrading your plan or reducing crawl depth.
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <span style="color:var(--accent4)">📊</span>
+              <span class="card-title">Token Usage by Job</span>
+            </div>
+            <div class="card-body no-pad">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Job</th><th>Date</th><th>Tokens Used</th><th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="tc-title">login-regression-v2</td>
+                    <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted)">Apr 25</td>
+                    <td style="font-family:'DM Mono',monospace">9,100</td>
+                    <td><span class="status-chip done">Done</span></td>
+                  </tr>
+                  <tr>
+                    <td class="tc-title">checkout-flow-crawl</td>
+                    <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted)">Apr 25</td>
+                    <td style="font-family:'DM Mono',monospace">4,218</td>
+                    <td><span class="status-chip running">Running</span></td>
+                  </tr>
+                  <tr>
+                    <td class="tc-title">full-app-deep-crawl</td>
+                    <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted)">Apr 24</td>
+                    <td style="font-family:'DM Mono',monospace">24,600</td>
+                    <td><span class="status-chip done">Done</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span style="color:var(--accent2)">🛡</span>
+              <span class="card-title">Quota Guard</span>
+            </div>
+            <div class="card-body">
+              <div style="font-size:13px;color:var(--text-dim);margin-bottom:14px">Set a hard limit to prevent unexpected overage.</div>
+              <div class="input-group">
+                <div class="input-label">Max tokens per crawl</div>
+                <input class="input-field" type="number" value="15000"/>
+              </div>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;margin-bottom:14px">
+                <input type="checkbox" checked style="accent-color:var(--accent)"/>
+                Block crawl if estimate exceeds limit
+              </label>
+              <button class="btn btn-primary" style="width:100%;justify-content:center">Save Guard Settings</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TEST CASES ── -->
+    <div id="view-testcases" style="display:none">
+      <div class="topbar">
+        <span class="page-title">Test Cases <span class="sub">Story 6: Viewer UI</span></span>
+        <div class="topbar-right">
+          <button class="btn btn-ghost">⬇ Export CSV</button>
+          <button class="btn btn-primary" onclick="showView('scripts')">Generate Scripts →</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="search-bar">
+          <span>🔍</span>
+          <input placeholder="Search test cases by title, ID, or description…"/>
+        </div>
+        <div class="filter-row">
+          <div class="filter-chip active">All (312)</div>
+          <div class="filter-chip">Functional (140)</div>
+          <div class="filter-chip">E2E (98)</div>
+          <div class="filter-chip">Regression (56)</div>
+          <div class="filter-chip">API (18)</div>
+        </div>
+        <div class="card">
+          <div class="card-body no-pad">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Module</th>
+                    <th>Priority</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="expand-row" onclick="toggleRow(this)">
+                    <td><button class="expand-btn">▶</button></td>
+                    <td class="tc-id">TC-001</td>
+                    <td class="tc-title">Verify checkout form validation with empty fields</td>
+                    <td><span class="tc-type functional">Functional</span></td>
+                    <td style="font-size:12px;color:var(--text-muted)">Checkout</td>
+                    <td><span class="tc-type e2e" style="background:rgba(255,107,107,0.1);color:var(--accent3)">High</span></td>
+                    <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px">Copy</button></td>
+                  </tr>
+                  <tr id="detail-row-1" style="display:none">
+                    <td colspan="7" style="padding:16px 24px;background:var(--surface2)">
+                      <div style="font-size:13px;font-weight:600;margin-bottom:8px">Steps:</div>
+                      <div style="font-size:12px;color:var(--text-dim);line-height:1.8;font-family:'DM Mono',monospace">
+                        1. Navigate to /checkout<br/>
+                        2. Leave all required fields empty<br/>
+                        3. Click "Place Order" button<br/>
+                        4. Expect: validation error shown for each required field<br/>
+                        5. Expect: form NOT submitted
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="expand-row" onclick="toggleRow(this)">
+                    <td><button class="expand-btn">▶</button></td>
+                    <td class="tc-id">TC-002</td>
+                    <td class="tc-title">Complete checkout flow with valid card details</td>
+                    <td><span class="tc-type e2e">E2E</span></td>
+                    <td style="font-size:12px;color:var(--text-muted)">Checkout</td>
+                    <td><span class="tc-type e2e" style="background:rgba(255,107,107,0.1);color:var(--accent3)">High</span></td>
+                    <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px">Copy</button></td>
+                  </tr>
+                  <tr id="detail-row-2" style="display:none">
+                    <td colspan="7" style="padding:16px 24px;background:var(--surface2)">
+                      <div style="font-size:12px;color:var(--text-dim);line-height:1.8;font-family:'DM Mono',monospace">1. Navigate to /checkout → 2. Fill billing info → 3. Enter valid card → 4. Submit → 5. Expect: order confirmation page</div>
+                    </td>
+                  </tr>
+                  <tr class="expand-row" onclick="toggleRow(this)">
+                    <td><button class="expand-btn">▶</button></td>
+                    <td class="tc-id">TC-003</td>
+                    <td class="tc-title">Validate promo code field rejects invalid codes</td>
+                    <td><span class="tc-type regression">Regression</span></td>
+                    <td style="font-size:12px;color:var(--text-muted)">Checkout</td>
+                    <td><span class="tc-type" style="background:rgba(255,255,255,0.05);color:var(--text-muted)">Medium</span></td>
+                    <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px">Copy</button></td>
+                  </tr>
+                  <tr id="detail-row-3" style="display:none">
+                    <td colspan="7" style="padding:16px 24px;background:var(--surface2)">
+                      <div style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace">1. Enter INVALID_CODE → 2. Click Apply → 3. Expect: error toast "Invalid promo code"</div>
+                    </td>
+                  </tr>
+                  <tr class="expand-row" onclick="toggleRow(this)">
+                    <td><button class="expand-btn">▶</button></td>
+                    <td class="tc-id">TC-004</td>
+                    <td class="tc-title">POST /api/orders returns 201 with valid payload</td>
+                    <td><span class="tc-type api">API</span></td>
+                    <td style="font-size:12px;color:var(--text-muted)">Orders API</td>
+                    <td><span class="tc-type e2e" style="background:rgba(255,107,107,0.1);color:var(--accent3)">High</span></td>
+                    <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px">Copy</button></td>
+                  </tr>
+                  <tr id="detail-row-4" style="display:none">
+                    <td colspan="7" style="padding:16px 24px;background:var(--surface2)">
+                      <div style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace">Method: POST /api/v1/orders → Header: Authorization Bearer &lt;token&gt; → Body: valid order JSON → Assert: status 201, body.id exists</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:13px;color:var(--text-muted)">
+          <span>Showing 1–4 of 312 results</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px">← Prev</button>
+            <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;background:rgba(0,229,160,0.08);border-color:rgba(0,229,160,0.2);color:var(--accent)">1</button>
+            <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px">2</button>
+            <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px">3</button>
+            <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCRIPT GENERATOR ── -->
+    <div id="view-scripts" style="display:none">
+      <div class="topbar">
+        <span class="page-title">Script Generator <span class="sub">Story 7</span></span>
+        <div class="topbar-right">
+          <button class="btn btn-ghost" onclick="showView('testcases')">← Test Cases</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="two-col">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header">
+                <span style="color:var(--accent)">⚙️</span>
+                <span class="card-title">Framework Selection</span>
+              </div>
+              <div class="card-body">
+                <div class="framework-grid">
+                  <div class="fw-card selected" onclick="selectFW(this)">
+                    <div class="fw-icon">🎭</div>
+                    <div class="fw-name">Playwright</div>
+                    <div class="fw-lang">TS / JS / Python</div>
+                  </div>
+                  <div class="fw-card" onclick="selectFW(this)">
+                    <div class="fw-icon">🕹</div>
+                    <div class="fw-name">Selenium</div>
+                    <div class="fw-lang">Java / Python / C#</div>
+                  </div>
+                  <div class="fw-card" onclick="selectFW(this)">
+                    <div class="fw-icon">📱</div>
+                    <div class="fw-name">Appium</div>
+                    <div class="fw-lang">Mobile · iOS / Android</div>
+                  </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+                  <div class="input-group" style="margin-bottom:0">
+                    <div class="input-label">Language</div>
+                    <select>
+                      <option selected>TypeScript</option>
+                      <option>JavaScript</option>
+                      <option>Python</option>
+                    </select>
+                  </div>
+                  <div class="input-group" style="margin-bottom:0">
+                    <div class="input-label">Test Runner</div>
+                    <select>
+                      <option selected>Playwright Test</option>
+                      <option>Jest</option>
+                      <option>Vitest</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="margin-bottom:14px">
+                  <div class="input-label" style="margin-bottom:8px">Test Cases to Include</div>
+                  <div class="chip-toggle">
+                    <div class="chip-opt sel">TC-001</div>
+                    <div class="chip-opt sel">TC-002</div>
+                    <div class="chip-opt sel">TC-003</div>
+                    <div class="chip-opt">TC-004</div>
+                    <div class="chip-opt">TC-005</div>
+                    <div class="chip-opt">All (312)</div>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px">
+                  ⚡ Generate Scripts
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span style="color:var(--accent2)">📝</span>
+              <span class="card-title">Script Preview</span>
+              <div style="margin-left:auto;display:flex;gap:6px">
+                <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px">Copy</button>
+                <button class="btn btn-primary" style="font-size:12px;padding:5px 10px">⬇ Download</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="tabs" style="margin-bottom:14px">
+                <div class="tab active">checkout.spec.ts</div>
+                <div class="tab">helpers.ts</div>
+                <div class="tab">fixtures.ts</div>
+              </div>
+              <div class="code-preview">
+<span class="cm">// Generated by CrawlIQ · Apr 25 2026 · Playwright/TypeScript</span><br/>
+<span class="kw">import</span> { test, expect } <span class="kw">from</span> <span class="str">'@playwright/test'</span>;<br/>
+<br/>
+<span class="fn">test.describe</span>(<span class="str">'Checkout Flow'</span>, () => {<br/>
+&nbsp;&nbsp;<span class="fn">test</span>(<span class="str">'TC-001: Validates empty fields'</span>, <span class="kw">async</span> ({ page }) => {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'/checkout'</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">await</span> page.<span class="fn">click</span>(<span class="str">'[data-testid="place-order-btn"]'</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">await</span> expect(page.<span class="fn">locator</span>(<span class="str">'.validation-error'</span>)).<span class="fn">toBeVisible</span>();<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">await</span> expect(page.<span class="fn">locator</span>(<span class="str">'.validation-error'</span>)).<span class="fn">toHaveCount</span>(4);<br/>
+&nbsp;&nbsp;});<br/>
+<br/>
+&nbsp;&nbsp;<span class="fn">test</span>(<span class="str">'TC-002: Complete checkout with valid card'</span>, <span class="kw">async</span> ({ page }) => {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'/checkout'</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">await</span> page.<span class="fn">fill</span>(<span class="str">'[name="firstName"]'</span>, <span class="str">'John'</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">await</span> page.<span class="fn">fill</span>(<span class="str">'[name="cardNumber"]'</span>, <span class="str">'4111111111111111'</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">await</span> page.<span class="fn">click</span>(<span class="str">'[data-testid="place-order-btn"]'</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">await</span> expect(page).<span class="fn">toHaveURL</span>(<span class="str">'/order-confirmation'</span>);<br/>
+&nbsp;&nbsp;});<br/>
+});
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CI/CD ── -->
+    <div id="view-cicd" style="display:none">
+      <div class="topbar">
+        <span class="page-title">CI/CD Executions <span class="sub">Story 8</span></span>
+        <div class="topbar-right">
+          <button class="btn btn-primary">▶ Trigger Run</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="three-col">
+          <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-value">91</div><div class="stat-label">Passed Runs</div></div>
+          <div class="stat-card red"><div class="stat-icon">❌</div><div class="stat-value">5</div><div class="stat-label">Failed Runs</div></div>
+          <div class="stat-card blue"><div class="stat-icon">⏱</div><div class="stat-value">4m 22s</div><div class="stat-label">Avg Duration</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span style="color:var(--accent)">🚀</span>
+            <span class="card-title">Execution History</span>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <select style="font-size:12px;padding:6px 28px 6px 10px"><option>All pipelines</option></select>
+              <select style="font-size:12px;padding:6px 28px 6px 10px"><option>Last 7 days</option></select>
+            </div>
+          </div>
+          <div class="card-body no-pad">
+            <div class="exec-row">
+              <div class="exec-id">#RUN-097</div>
+              <div class="exec-name">login-regression-v2 · Playwright/TS</div>
+              <div class="exec-time">Apr 25 · 14:20</div>
+              <div class="exec-result"><span class="pass-count">✓ 89 pass</span> <span class="fail-count">✗ 0 fail</span></div>
+              <div class="status-chip done">Passed</div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;margin-left:4px">Logs</button>
+            </div>
+            <div class="exec-row">
+              <div class="exec-id">#RUN-096</div>
+              <div class="exec-name">dashboard-smoke · Playwright/TS</div>
+              <div class="exec-time">Apr 25 · 12:45</div>
+              <div class="exec-result"><span class="pass-count">✓ 21 pass</span> <span class="fail-count">✗ 3 fail</span></div>
+              <div class="status-chip failed">Failed</div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;margin-left:4px">Logs</button>
+            </div>
+            <div class="exec-row">
+              <div class="exec-id">#RUN-095</div>
+              <div class="exec-name">checkout-e2e · Selenium/Java</div>
+              <div class="exec-time">Apr 24 · 18:00</div>
+              <div class="exec-result"><span class="pass-count">✓ 56 pass</span> <span class="fail-count">✗ 2 fail</span></div>
+              <div class="status-chip failed">Failed</div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;margin-left:4px">Logs</button>
+            </div>
+            <div class="exec-row">
+              <div class="exec-id">#RUN-094</div>
+              <div class="exec-name">api-smoke · Postman/Newman</div>
+              <div class="exec-time">Apr 24 · 14:00</div>
+              <div class="exec-result"><span class="pass-count">✓ 34 pass</span> <span class="fail-count">✗ 0 fail</span></div>
+              <div class="status-chip done">Passed</div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;margin-left:4px">Logs</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RBAC ── -->
+    <div id="view-rbac" style="display:none">
+      <div class="topbar">
+        <span class="page-title">Access Control <span class="sub">Story 9: RBAC UI</span></span>
+        <div class="topbar-right">
+          <button class="btn btn-primary">+ Invite User</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <span style="color:var(--accent4)">🔐</span>
+              <span class="card-title">Feature Permissions Matrix</span>
+            </div>
+            <div class="card-body no-pad">
+              <div class="rbac-grid">
+                <div class="rbac-header" style="text-align:left;padding-left:16px">Feature</div>
+                <div class="rbac-header">Admin</div>
+                <div class="rbac-header">QA Lead</div>
+                <div class="rbac-header">Developer</div>
+                <div class="rbac-header">Viewer</div>
+
+                <div class="rbac-feature">New Crawl</div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+
+                <div class="rbac-feature">View Test Cases</div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+
+                <div class="rbac-feature">Generate Scripts</div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+
+                <div class="rbac-feature">Trigger CI/CD</div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+
+                <div class="rbac-feature">Audit Logs</div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+
+                <div class="rbac-feature">Manage Users</div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+
+                <div class="rbac-feature">Token Settings</div>
+                <div class="rbac-cell"><span class="rbac-check rbac-yes">✓</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+                <div class="rbac-cell"><span class="rbac-check rbac-no">✕</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span style="color:var(--accent2)">👥</span>
+              <span class="card-title">Team Members</span>
+            </div>
+            <div class="card-body no-pad">
+              <div style="padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
+                <div class="avatar">AK</div>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:500">Arjun Kulkarni</div>
+                  <div style="font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace">arjun@acme.com</div>
+                </div>
+                <span class="role-badge admin">Admin</span>
+              </div>
+              <div style="padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
+                <div class="avatar" style="background:linear-gradient(135deg,#5b6ef5,#c792ea)">MS</div>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:500">Meera Sharma</div>
+                  <div style="font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace">meera@acme.com</div>
+                </div>
+                <span class="role-badge qa">QA Lead</span>
+              </div>
+              <div style="padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
+                <div class="avatar" style="background:linear-gradient(135deg,#ff6b6b,#f5a623)">RV</div>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:500">Rahul Verma</div>
+                  <div style="font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace">rahul@acme.com</div>
+                </div>
+                <span class="role-badge dev">Developer</span>
+              </div>
+              <div style="padding:14px 20px;display:flex;align-items:center;gap:12px">
+                <div class="avatar" style="background:var(--surface3);color:var(--text-muted)">PS</div>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:500">Priya Singh</div>
+                  <div style="font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace">priya@acme.com</div>
+                </div>
+                <span class="role-badge viewer">Viewer</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AUDIT LOGS ── -->
+    <div id="view-audit" style="display:none">
+      <div class="topbar">
+        <span class="page-title">Audit Logs <span class="sub">Story 11</span></span>
+        <div class="topbar-right">
+          <button class="btn btn-ghost">⬇ Export</button>
+        </div>
+      </div>
+      <div class="content">
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+          <div class="search-bar" style="flex:1;margin-bottom:0">
+            <span>🔍</span>
+            <input placeholder="Search logs…"/>
+          </div>
+          <select style="font-size:13px"><option>All users</option><option>arjun@acme.com</option><option>meera@acme.com</option></select>
+          <select style="font-size:13px"><option>All actions</option><option>Crawl</option><option>Login</option><option>Export</option></select>
+          <select style="font-size:13px"><option>Last 24 hours</option><option>Last 7 days</option><option>Last 30 days</option></select>
+        </div>
+        <div class="card">
+          <div class="card-body no-pad">
+            <div class="log-row" style="background:var(--surface2);border-bottom:1px solid var(--border)">
+              <div style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;width:140px">TIMESTAMP</div>
+              <div style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;width:100px">USER</div>
+              <div style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace">ACTION</div>
+            </div>
+            <div class="log-row"><div class="log-dot" style="background:var(--accent)"></div><div class="log-time">Apr 25 · 14:32:01</div><div class="log-user">arjun</div><div class="log-action">Started crawl <strong>checkout-flow-crawl</strong> → https://shop.acme.com/checkout</div></div>
+            <div class="log-row"><div class="log-dot" style="background:var(--accent2)"></div><div class="log-time">Apr 25 · 14:15:44</div><div class="log-user">meera</div><div class="log-action">Downloaded Playwright scripts for <strong>login-regression-v2</strong></div></div>
+            <div class="log-row"><div class="log-dot" style="background:var(--accent3)"></div><div class="log-time">Apr 25 · 12:45:18</div><div class="log-user">system</div><div class="log-action">CI/CD run <strong>#RUN-096</strong> failed — 3 assertions failed in dashboard-smoke</div></div>
+            <div class="log-row"><div class="log-dot" style="background:var(--accent4)"></div><div class="log-time">Apr 25 · 10:22:03</div><div class="log-user">arjun</div><div class="log-action">Updated role for <strong>priya@acme.com</strong> from Developer → Viewer</div></div>
+            <div class="log-row"><div class="log-dot" style="background:var(--accent)"></div><div class="log-time">Apr 25 · 09:00:00</div><div class="log-user">meera</div><div class="log-action">Logged in via OAuth (Google) from 103.21.42.x</div></div>
+            <div class="log-row"><div class="log-dot" style="background:var(--accent2)"></div><div class="log-time">Apr 24 · 18:00:30</div><div class="log-user">rahul</div><div class="log-action">Triggered CI/CD run <strong>#RUN-095</strong> · checkout-e2e · Selenium/Java</div></div>
+            <div class="log-row"><div class="log-dot" style="background:var(--accent)"></div><div class="log-time">Apr 24 · 16:41:55</div><div class="log-user">arjun</div><div class="log-action">Created new crawl <strong>full-app-deep-crawl</strong> (depth 3, 24,600 tokens)</div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:13px;color:var(--text-muted)">
+          <span>Showing 7 of 1,248 log entries</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px">← Prev</button>
+            <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AUTH / PROFILE ── -->
+    <div id="view-auth" style="display:none">
+      <div class="topbar">
+        <span class="page-title">Profile & Security <span class="sub">Story 2: Auth + Session</span></span>
+      </div>
+      <div class="content">
+        <div class="two-col">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-header">
+                <span style="color:var(--accent)">👤</span>
+                <span class="card-title">Account Details</span>
+              </div>
+              <div class="card-body">
+                <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+                  <div class="avatar" style="width:56px;height:56px;font-size:22px">AK</div>
+                  <div>
+                    <div style="font-size:16px;font-weight:600;font-family:'Syne',sans-serif">Arjun Kulkarni</div>
+                    <div style="font-size:13px;color:var(--text-muted);font-family:'DM Mono',monospace">arjun@acme.com</div>
+                    <span class="role-badge admin" style="margin-top:4px;display:inline-flex">Admin</span>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <div class="input-label">Full Name</div>
+                  <input class="input-field" value="Arjun Kulkarni"/>
+                </div>
+                <div class="input-group">
+                  <div class="input-label">Email</div>
+                  <input class="input-field" value="arjun@acme.com" type="email"/>
+                </div>
+                <button class="btn btn-primary">Save Changes</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <span style="color:var(--accent3)">🔒</span>
+                <span class="card-title">Change Password</span>
+              </div>
+              <div class="card-body">
+                <div class="input-group">
+                  <div class="input-label">Current Password</div>
+                  <input class="input-field" type="password" placeholder="••••••••"/>
+                </div>
+                <div class="input-group">
+                  <div class="input-label">New Password</div>
+                  <input class="input-field" type="password" placeholder="••••••••"/>
+                </div>
+                <div class="input-group">
+                  <div class="input-label">Confirm New Password</div>
+                  <input class="input-field" type="password" placeholder="••••••••"/>
+                </div>
+                <button class="btn btn-primary">Update Password</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-header">
+                <span style="color:var(--accent2)">🛡</span>
+                <span class="card-title">Session & Security</span>
+              </div>
+              <div class="card-body">
+                <div style="font-size:13px;margin-bottom:14px">
+                  <div style="color:var(--text-dim);margin-bottom:8px">Active Sessions</div>
+                  <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                    <div>
+                      <div style="font-size:13px;font-weight:500">Chrome · Pune, IN</div>
+                      <div style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace">Current · 103.21.42.x</div>
+                    </div>
+                    <span style="font-size:11px;background:rgba(0,229,160,0.1);color:var(--accent);padding:3px 8px;border-radius:20px;font-family:'DM Mono',monospace">Active</span>
+                  </div>
+                  <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px;display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                      <div style="font-size:13px;font-weight:500">Safari · Mumbai, IN</div>
+                      <div style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace">2 days ago · 49.36.x.x</div>
+                    </div>
+                    <button class="btn btn-danger" style="font-size:11px;padding:4px 8px">Revoke</button>
+                  </div>
+                </div>
+                <div style="border-top:1px solid var(--border);padding-top:14px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <div style="font-size:13px">Session Timeout</div>
+                    <select style="font-size:12px;padding:5px 24px 5px 8px">
+                      <option>30 minutes</option>
+                      <option selected>1 hour</option>
+                      <option>4 hours</option>
+                      <option>Never</option>
+                    </select>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div style="font-size:13px">Two-Factor Auth</div>
+                    <div style="background:rgba(0,229,160,0.1);color:var(--accent);padding:4px 10px;border-radius:20px;font-size:12px;font-family:'DM Mono',monospace">Enabled</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <span style="color:var(--accent4)">🔑</span>
+                <span class="card-title">OAuth Connections</span>
+              </div>
+              <div class="card-body">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                  <div style="display:flex;align-items:center;gap:10px;font-size:13px"><span style="font-size:20px">🔵</span> Google</div>
+                  <div style="font-size:12px;background:rgba(0,229,160,0.1);color:var(--accent);padding:3px 8px;border-radius:20px;font-family:'DM Mono',monospace">Connected</div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div style="display:flex;align-items:center;gap:10px;font-size:13px"><span style="font-size:20px">⬛</span> GitHub</div>
+                  <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px">Connect</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══ CONFIRM MODAL ═══ -->
+<div class="modal-overlay" id="crawlModal">
+  <div class="modal">
+    <div class="modal-title">🚀 Confirm Crawl</div>
+    <div class="modal-body">
+      You're about to crawl <strong>https://shop.acme.com/checkout</strong> with an estimated usage of <strong>~12,400 tokens</strong> (32% of your monthly quota).<br/><br/>
+      This action will begin immediately and cannot be paused once started.
+    </div>
+    <div class="token-widget" style="margin-bottom:0">
+      <div class="token-row">
+        <div><div class="token-label">Est. Usage</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">12,400</div></div>
+        <div style="text-align:right"><div class="token-label">Remaining after</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--accent)">25,600</div></div>
+      </div>
+      <div class="token-bar"><div class="token-fill ok" style="width:32%"></div></div>
+    </div>
+    <div style="height:20px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal();showView('progress')">Confirm & Start</button>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+/* ══════════════════════════════════════════
+   CRAWLIQ ENTERPRISE — AUTH + RBAC ENGINE
+   Single source of truth. No duplicate vars.
+══════════════════════════════════════════ */
+
+// ── User registry ─────────────────────────
+const USERS = {
+  'arjun@crawliq.io': {
+    password: 'admin123',
+    name: 'Arjun Kulkarni', initials: 'AK', role: 'admin',
+    roleLabel: 'Administrator',
+    avatarGrad: 'linear-gradient(135deg,#f5a623,#e8870a)',
+    greeting: 'Good morning, Arjun \u{1F44B}',
+    tokens: '62k / 100k', tokenPct: 62,
+    email: 'arjun@crawliq.io'
+  },
+  'meera@crawliq.io': {
+    password: 'qa123',
+    name: 'Meera Sharma', initials: 'MS', role: 'qa',
+    roleLabel: 'QA Engineer',
+    avatarGrad: 'linear-gradient(135deg,#5b6ef5,#3d52d5)',
+    greeting: 'Good afternoon, Meera \u{1F44B}',
+    tokens: '18k / 50k', tokenPct: 36,
+    email: 'meera@crawliq.io'
+  },
+  'rohan@crawliq.io': {
+    password: 'dev123',
+    name: 'Rohan Joshi', initials: 'RJ', role: 'dev',
+    roleLabel: 'Developer',
+    avatarGrad: 'linear-gradient(135deg,#00e5a0,#00b37a)',
+    greeting: 'Good evening, Rohan \u{1F44B}',
+    tokens: '7k / 25k', tokenPct: 28,
+    email: 'rohan@crawliq.io'
+  }
+};
+
+// ── Permissions: view -> allowed roles ─────
+const PERMISSIONS = {
+  'dashboard':   ['admin','qa','dev'],
+  'audit':       ['admin'],
+  'crawl-input': ['admin','qa'],
+  'progress':    ['admin','qa','dev'],
+  'tokens':      ['admin'],
+  'testcases':   ['admin','qa','dev'],
+  'scripts':     ['admin','qa','dev'],
+  'cicd':        ['admin','dev'],
+  'rbac':        ['admin'],
+  'auth':        ['admin','qa','dev']
+};
+
+// ── Nav definition ─────────────────────────
+const NAV_CONFIG = [
+  { view:'dashboard',   label:'Dashboard',      icon:'\u2B1B', section:'overview', roles:['admin','qa','dev'] },
+  { view:'audit',       label:'Audit Logs',     icon:'\u{1F4CB}', section:'overview', roles:['admin'], badge:'3', badgeCls:'warn' },
+  { view:'crawl-input', label:'New Crawl',      icon:'\u{1F517}', section:'crawler',  roles:['admin','qa'] },
+  { view:'progress',    label:'Live Jobs',      icon:'\u26A1',    section:'crawler',  roles:['admin','qa','dev'], badge:'2' },
+  { view:'tokens',      label:'Token Usage',    icon:'\u{1FA99}', section:'crawler',  roles:['admin'] },
+  { view:'testcases',   label:'Test Cases',     icon:'\u{1F9EA}', section:'testing',  roles:['admin','qa','dev'] },
+  { view:'scripts',     label:'Script Gen',     icon:'\u2699\uFE0F', section:'testing', roles:['admin','qa','dev'] },
+  { view:'cicd',        label:'CI/CD Runs',     icon:'\u{1F680}', section:'testing',  roles:['admin','dev'], badge:'1', badgeCls:'fail' },
+  { view:'rbac',        label:'Access Control', icon:'\u{1F510}', section:'admin',    roles:['admin'] },
+  { view:'auth',        label:'Profile',        icon:'\u{1F464}', section:'admin',    roles:['admin','qa','dev'] }
+];
+
+const ALL_VIEWS = ['dashboard','crawl-input','progress','tokens','testcases','scripts','cicd','rbac','audit','auth'];
+
+// ── Session management ─────────────────────
+let currentUser = null;
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem('crawliq_session');
+    if (!raw) return null;
+    const sess = JSON.parse(raw);
+    if (Date.now() > sess.expiresAt) {
+      localStorage.removeItem('crawliq_session');
+      return null;
+    }
+    return sess;
+  } catch(e) { return null; }
+}
+
+function saveSession(email, user) {
+  const sess = Object.assign({ loginAt: Date.now(), expiresAt: Date.now() + 8*60*60*1000 }, user);
+  localStorage.setItem('crawliq_session', JSON.stringify(sess));
+  return sess;
+}
+
+function clearSession() {
+  localStorage.removeItem('crawliq_session');
+  currentUser = null;
+}
+
+// ── Login ──────────────────────────────────
+function doLogin() {
+  const emailEl = document.getElementById('l-email');
+  const passEl  = document.getElementById('l-pass');
+  const errEl   = document.getElementById('login-error');
+  const errMsg  = document.getElementById('login-error-msg');
+  const btn     = document.getElementById('login-btn');
+  const email   = emailEl.value.trim().toLowerCase();
+  const pass    = passEl.value;
+
+  errEl.classList.remove('show');
+  emailEl.classList.remove('err');
+  passEl.classList.remove('err');
+
+  if (!email) { errMsg.textContent = 'Email address is required.'; errEl.classList.add('show'); emailEl.classList.add('err'); return; }
+  if (!pass)  { errMsg.textContent = 'Password is required.';      errEl.classList.add('show'); passEl.classList.add('err');  return; }
+
+  const user = USERS[email];
+  if (!user || user.password !== pass) {
+    errMsg.textContent = 'Invalid email or password. Try a demo account below.';
+    errEl.classList.add('show');
+    emailEl.classList.add('err');
+    passEl.classList.add('err');
+    return;
+  }
+
+  btn.textContent = 'Signing in\u2026';
+  btn.classList.add('loading');
+  setTimeout(function() {
+    currentUser = saveSession(email, user);
+    bootApp();
+  }, 600);
+}
+
+function demoLogin(role) {
+  var emailMap = { admin:'arjun@crawliq.io', qa:'meera@crawliq.io', dev:'rohan@crawliq.io' };
+  var email = emailMap[role];
+  var user  = USERS[email];
+  if (!user) return;
+  currentUser = saveSession(email, user);
+  bootApp();
+}
+
+// ── Boot app after login ───────────────────
+function bootApp() {
+  var gate = document.getElementById('auth-gate');
+  gate.style.opacity = '0';
+  gate.style.transition = 'opacity 0.35s ease';
+  setTimeout(function() { gate.style.display = 'none'; }, 380);
+  applyRBAC();
+  renderNav();
+  updateSidebarUser();
+  updateTopbar();
+  showView('dashboard');
+}
+
+// ── RBAC: inject locked overlays ──────────
+function applyRBAC() {
+  if (!currentUser) return;
+  var role = currentUser.role;
+  ALL_VIEWS.forEach(function(view) {
+    var el = document.getElementById('view-' + view);
+    if (!el) return;
+    var existing = el.querySelector('.locked-page');
+    if (existing) existing.remove();
+    var allowed = PERMISSIONS[view] || [];
+    if (!allowed.includes(role)) {
+      var lock = document.createElement('div');
+      lock.className = 'locked-page';
+      lock.innerHTML =
+        '<div class="locked-icon">\uD83D\uDD12</div>' +
+        '<div class="locked-title">Access Restricted</div>' +
+        '<div class="locked-sub">This section requires elevated permissions. Contact your Administrator to request access.</div>' +
+        '<span class="locked-chip">' + role.toUpperCase() + ' role \u00B7 insufficient privileges</span>';
+      var content = el.querySelector('.content');
+      if (content) { content.innerHTML = ''; content.appendChild(lock); }
+      else { el.appendChild(lock); }
+    }
+  });
+}
+
+// ── Render nav per role ────────────────────
+function renderNav() {
+  if (!currentUser) return;
+  var role = currentUser.role;
+  var sidebar = document.querySelector('.sidebar');
+  var footer  = sidebar.querySelector('.sidebar-footer');
+  sidebar.querySelectorAll('.nav-section').forEach(function(s) { s.remove(); });
+
+  var SECTION_LABELS = { overview:'Overview', crawler:'Crawler', testing:'Testing', admin:'Admin' };
+  var sectEls = {};
+
+  NAV_CONFIG.forEach(function(item) {
+    if (!item.roles.includes(role)) return;
+    if (!sectEls[item.section]) {
+      var sec = document.createElement('div');
+      sec.className = 'nav-section';
+      sec.innerHTML = '<div class="nav-label">' + SECTION_LABELS[item.section] + '</div>';
+      sectEls[item.section] = sec;
+      sidebar.insertBefore(sec, footer);
+    }
+    var a = document.createElement('a');
+    a.className = 'nav-item';
+    a.dataset.view = item.view;
+    a.style.cursor = 'pointer';
+    a.innerHTML = '<span class="icon">' + item.icon + '</span> ' + item.label;
+    if (item.badge) {
+      var bd = document.createElement('span');
+      bd.className = 'badge' + (item.badgeCls ? ' ' + item.badgeCls : '');
+      bd.textContent = item.badge;
+      a.appendChild(bd);
+    }
+    (function(v) { a.onclick = function() { showView(v); }; })(item.view);
+    sectEls[item.section].appendChild(a);
+  });
+}
+
+// ── Update sidebar user card ───────────────
+function updateSidebarUser() {
+  if (!currentUser) return;
+  var u = currentUser;
+  var card = document.querySelector('.user-card');
+  if (card) {
+    card.querySelector('.avatar').textContent = u.initials;
+    card.querySelector('.avatar').style.background = u.avatarGrad;
+    card.querySelector('.user-name').textContent = u.name;
+    card.querySelector('.user-role').textContent = u.roleLabel;
+    card.onclick = function() { showView('auth'); };
+  }
+  var mini = document.querySelector('.token-bar-mini');
+  if (mini) mini.innerHTML = '<span>Tokens</span><span style="color:var(--text);font-family:\'DM Mono\',monospace">' + u.tokens + '</span>';
+  var miniFill = document.querySelector('.mini-fill');
+  if (miniFill) miniFill.style.width = u.tokenPct + '%';
+}
+
+// ── Update topbar ──────────────────────────
+function updateTopbar() {
+  if (!currentUser) return;
+  var u = currentUser;
+
+  // Update greeting text
+  document.querySelectorAll('.page-title .sub').forEach(function(el) {
+    if (el.textContent.indexOf('Good') !== -1 || el.textContent.indexOf('\uD83D\uDC4B') !== -1) {
+      el.textContent = u.greeting;
+    }
+  });
+
+  // Hide "New Crawl" button for roles that can't use it
+  var canNewCrawl = ['admin','qa'].includes(u.role);
+  document.querySelectorAll('.btn-primary').forEach(function(b) {
+    if (b.textContent.indexOf('New Crawl') !== -1 || b.textContent.indexOf('Crawl') !== -1) {
+      b.style.display = canNewCrawl ? '' : 'none';
+    }
+  });
+
+  // Inject user widget into every topbar
+  document.querySelectorAll('.topbar').forEach(function(tb) {
+    tb.querySelectorAll('.topbar-user').forEach(function(x) { x.remove(); });
+    var tbRight = tb.querySelector('.topbar-right');
+    if (!tbRight) return;
+
+    var adminLink = u.role === 'admin'
+      ? '<div class="dd-item" data-goto="rbac"><span>\uD83D\uDD10</span> Access Control</div>'
+      : '';
+
+    var widget = document.createElement('div');
+    widget.className = 'topbar-user';
+    widget.innerHTML =
+      '<div class="t-avatar" style="background:' + u.avatarGrad + '">' + u.initials + '</div>' +
+      '<div>' +
+        '<div class="t-name">' + u.name.split(' ')[0] + '</div>' +
+        '<div class="t-role">' + u.roleLabel + '</div>' +
+      '</div>' +
+      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--text-muted);margin-left:4px"><polyline points="6 9 12 15 18 9"/></svg>' +
+      '<div class="user-dropdown">' +
+        '<div class="dd-item" data-goto="auth"><span>\uD83D\uDC64</span> My Profile</div>' +
+        '<div class="dd-item" data-goto="auth"><span>\u2699\uFE0F</span> Preferences</div>' +
+        adminLink +
+        '<div class="dd-sep"></div>' +
+        '<div class="dd-item danger" id="dd-logout-' + Math.random().toString(36).slice(2) + '"><span>\uD83D\uDEAA</span> Sign out</div>' +
+      '</div>';
+
+    // Wire up dropdown item clicks
+    widget.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var gotoEl = e.target.closest('[data-goto]');
+      if (gotoEl) { closeDropdowns(); showView(gotoEl.dataset.goto); return; }
+      var dangerEl = e.target.closest('.dd-item.danger');
+      if (dangerEl) { doLogout(); return; }
+      var wasOpen = this.classList.contains('open');
+      closeDropdowns();
+      if (!wasOpen) this.classList.add('open');
+    });
+
+    tbRight.appendChild(widget);
+  });
+
+  // Update profile page fields
+  var profName = document.querySelector('#view-auth input[type="text"]');
+  if (profName) profName.value = u.name;
+  var profEmail = document.querySelector('#view-auth input[type="email"]');
+  if (profEmail) profEmail.value = u.email;
+}
+
+function closeDropdowns() {
+  document.querySelectorAll('.topbar-user').forEach(function(w) { w.classList.remove('open'); });
+}
+document.addEventListener('click', closeDropdowns);
+
+// ── Logout ─────────────────────────────────
+function doLogout() {
+  clearSession();
+  closeDropdowns();
+  var gate = document.getElementById('auth-gate');
+  gate.style.display = 'flex';
+  gate.style.opacity = '0';
+  gate.style.transition = 'none';
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      gate.style.transition = 'opacity 0.3s ease';
+      gate.style.opacity = '1';
+    });
+  });
+  // Reset form
+  ['l-email','l-pass'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('err'); }
+  });
+  document.getElementById('login-error').classList.remove('show');
+  var btn = document.getElementById('login-btn');
+  if (btn) { btn.textContent = 'Sign in'; btn.classList.remove('loading'); }
+  // Hide all views, show dashboard shell
+  ALL_VIEWS.forEach(function(v) {
+    var el = document.getElementById('view-' + v);
+    if (el) el.style.display = 'none';
+  });
+  document.getElementById('view-dashboard').style.display = '';
+  document.querySelectorAll('.topbar-user').forEach(function(x) { x.remove(); });
+}
+
+// ── showView with permission gate ──────────
+function showView(id) {
+  if (currentUser) {
+    var allowed = PERMISSIONS[id] || [];
+    if (!allowed.includes(currentUser.role)) {
+      showPermToast('Your role (' + currentUser.roleLabel + ') cannot access this section.');
+      return;
+    }
+  }
+  ALL_VIEWS.forEach(function(v) {
+    var el = document.getElementById('view-' + v);
+    if (el) el.style.display = 'none';
+  });
+  var target = document.getElementById('view-' + id);
+  if (target) target.style.display = '';
+  document.querySelectorAll('.nav-item').forEach(function(item) {
+    item.classList.toggle('active', item.dataset.view === id);
+  });
+  window.scrollTo(0, 0);
+}
+
+// ── Permission denied toast ────────────────
+var permToastTimer;
+function showPermToast(msg) {
+  var t = document.getElementById('perm-toast');
+  document.getElementById('perm-toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(permToastTimer);
+  permToastTimer = setTimeout(function() { t.classList.remove('show'); }, 3200);
+}
+
+// ── Legacy helpers (kept intact) ───────────
+function toggleRow(row) {
+  var btn = row.querySelector('.expand-btn');
+  var rows = row.parentElement.querySelectorAll('tr');
+  var nextRow = null;
+  for (var i = 0; i < rows.length; i++) {
+    if (rows[i] === row && i + 1 < rows.length) { nextRow = rows[i+1]; break; }
+  }
+  if (nextRow && nextRow.id && nextRow.id.indexOf('detail-row') === 0) {
+    var isOpen = nextRow.style.display !== 'none';
+    nextRow.style.display = isOpen ? 'none' : '';
+    if (btn) btn.textContent = isOpen ? '\u25B6' : '\u25BC';
+  }
+}
+
+function selectFW(card) {
+  document.querySelectorAll('.fw-card').forEach(function(c) { c.classList.remove('selected'); });
+  card.classList.add('selected');
+}
+
+function openModal()  { document.getElementById('crawlModal').classList.add('open'); }
+function closeModal() { document.getElementById('crawlModal').classList.remove('open'); }
+document.getElementById('crawlModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+document.querySelectorAll('.filter-chip').forEach(function(chip) {
+  chip.addEventListener('click', function() {
+    this.closest('.filter-row').querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
+    this.classList.add('active');
+  });
+});
+document.querySelectorAll('.chip-opt').forEach(function(chip) {
+  chip.addEventListener('click', function() { this.classList.toggle('sel'); });
+});
+document.querySelectorAll('.tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    this.closest('.tabs').querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+    this.classList.add('active');
+  });
+});
+
+// Enter key on login form
+['l-email','l-pass'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
+});
+
+// ── Init ───────────────────────────────────
+(function init() {
+  // Hide all views initially
+  ALL_VIEWS.forEach(function(v) {
+    var el = document.getElementById('view-' + v);
+    if (el) el.style.display = 'none';
+  });
+  document.getElementById('view-dashboard').style.display = '';
+  // Restore session if valid
+  var sess = loadSession();
+  if (sess && USERS[sess.email]) {
+    currentUser = sess;
+    document.getElementById('auth-gate').style.display = 'none';
+    bootApp();
+  }
+  // Otherwise auth-gate stays visible (default)
+})();
+</script>
+</body>
+</html>

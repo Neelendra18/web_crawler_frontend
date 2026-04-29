@@ -1,17 +1,8 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import CrawlerPage from '@pages/CrawlerPage'
-import { ErrorBoundary } from '@components/ErrorBoundary'
 
-function App() {
-  return (
-    <ErrorBoundary>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<CrawlerPage />} />
-        </Routes>
-      </BrowserRouter>
-    </ErrorBoundary>
-  )
-}
+import React from 'react';
+import { AppRouter } from './routes/AppRouter';
+import './pages/LoginPage.css';
 
-export default App
+const App: React.FC = () => <AppRouter />;
+
+export default App;
