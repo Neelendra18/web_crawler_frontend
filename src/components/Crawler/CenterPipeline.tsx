@@ -9,7 +9,7 @@ const steps = [
 ];
 
 const CenterPipeline: React.FC = () => {
-  const [activeStep, setActiveStep] = useState(2);
+  const [activeStep] = useState(2);
   return (
     <main className="main">
       <div className="content">

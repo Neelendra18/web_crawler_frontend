@@ -1,14 +1,11 @@
 
-import React, { useState } from 'react';
-import Modal from '../components/Modal/Modal';
+import React from 'react';
 
 const NewCrawlPage: React.FC = () => {
-  const [modalOpen, setModalOpen] = useState(false);
   // For demo, hardcode values as in the HTML
   const url = 'https://shop.acme.com/checkout';
   const estUsage = 12400;
   const quota = 38000;
-  const percent = Math.round((estUsage / quota) * 100);
   return (
     <div className="content">
       <div className="section-header">
@@ -128,7 +125,7 @@ const NewCrawlPage: React.FC = () => {
               <button
                 className="btn btn-primary"
                 style={{ width: '100%', justifyContent: 'center', padding: 12 }}
-                onClick={() => setModalOpen(true)}
+                // TODO: Implement crawl logic here
               >
                 🚀 Start Crawl
               </button>

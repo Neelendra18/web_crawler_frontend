@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Modal: React.FC<{ open: boolean; onClose: () => void; title: string; children: React.ReactNode; actions?: React.ReactNode }> = ({ open, onClose, title, children, actions }) => {
+const Modal: React.FC<{ open: boolean; onClose: () => void; title: string; children: React.ReactNode; actions?: React.ReactNode }> = ({ open, title, children, actions }) => {
   if (!open) return null;
   return (
     <div className="modal-overlay open">
