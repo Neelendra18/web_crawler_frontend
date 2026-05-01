@@ -4,8 +4,6 @@ import React from 'react';
 const NewCrawlPage: React.FC = () => {
   // For demo, hardcode values as in the HTML
   const url = 'https://shop.acme.com/checkout';
-  const estUsage = 12400;
-  const quota = 38000;
   return (
     <div className="content">
       <div className="section-header">

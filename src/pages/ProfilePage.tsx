@@ -116,7 +116,7 @@ const ProfilePage: React.FC = () => {
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                   <div style={{ fontSize: 13 }}>Session Timeout</div>
-                  <select style={{ fontSize: 12, padding: '5px 24px 5px 8px' }} value={sessionTimeout} readOnly>
+                  <select style={{ fontSize: 12, padding: '5px 24px 5px 8px' }} value={sessionTimeout}>
                     <option>30 minutes</option>
                     <option>1 hour</option>
                     <option>4 hours</option>

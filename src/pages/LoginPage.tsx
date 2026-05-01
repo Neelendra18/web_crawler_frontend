@@ -17,6 +17,7 @@ const LoginPage: React.FC = () => {
   const { login } = useAuth();
 
   // Mimic latest.html: use IDs, show/hide error, and handle demo login
+
   const doLogin = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setLoading(true);
@@ -25,7 +26,7 @@ const LoginPage: React.FC = () => {
       const user = DEMO_USERS.find(u => u.email === email);
       if (user && password === 'password') {
         setError('');
-        login({ name: user.name, email: user.email, role: user.role });
+        login({ name: user.name, email: user.email, role: user.role as 'admin' | 'qa' | 'dev' });
       } else {
         setError('Invalid credentials. Please try again.');
       }
@@ -38,7 +39,7 @@ const LoginPage: React.FC = () => {
     setTimeout(() => {
       setError('');
       const user = DEMO_USERS.find(u => u.role === role);
-      if (user) login({ name: user.name, email: user.email, role: user.role });
+      if (user) login({ name: user.name, email: user.email, role: user.role as 'admin' | 'qa' | 'dev' });
       setLoading(false);
     }, 400);
   };

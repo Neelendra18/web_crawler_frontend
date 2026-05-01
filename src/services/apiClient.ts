@@ -39,7 +39,7 @@ class ApiClient {
     // Response interceptor
     this.client.interceptors.response.use(
       res => {
-        const startTime = (res.config as any).startTime || Date.now()
+        const startTime = (res.config as unknown as { startTime?: number }).startTime || Date.now()
         const duration = Date.now() - startTime
         logger.apiResponse(
           res.config.method?.toUpperCase() || 'UNKNOWN',
@@ -54,7 +54,7 @@ class ApiClient {
         return res
       },
       (error: AxiosError) => {
-        const startTime = (error.config as any)?.startTime || Date.now()
+        const startTime = (error.config as unknown as { startTime?: number })?.startTime || Date.now()
         const duration = Date.now() - startTime
         logger.apiError(
           error.config?.method?.toUpperCase() || 'UNKNOWN',

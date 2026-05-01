@@ -53,7 +53,7 @@ const Sidebar: React.FC = () => {
             >
               <span className="icon">{item.icon}</span> {item.label}
               {item.badge && (
-                <span className={`badge${item.badgeClass ? ' ' + item.badgeClass : ''}`}>{item.badge}</span>
+                <span className="badge">{item.badge}</span>
               )}
             </Link>
           ))}

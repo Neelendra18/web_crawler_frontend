@@ -12,7 +12,6 @@ const Topbar: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  if (!user) return null;
 
   // Close dropdown on outside click
   React.useEffect(() => {
@@ -24,6 +23,8 @@ const Topbar: React.FC = () => {
     if (dropdown) document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [dropdown]);
+
+  if (!user) return null;
 
   const handleNav = (path: string) => {
     setDropdown(false);

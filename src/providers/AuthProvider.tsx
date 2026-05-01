@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
   name: string;
@@ -22,7 +22,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (data) {
       try {
         setUser(JSON.parse(data));
-      } catch {}
+      } catch {
+        // Ignore JSON parse errors
+      }
     }
     console.log('AuthProvider mounted, user:', data);
   }, []);
