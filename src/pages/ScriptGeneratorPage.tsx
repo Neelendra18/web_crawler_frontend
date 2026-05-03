@@ -46,13 +46,14 @@ const ScriptGeneratorPage: React.FC = () => {
 
   return (
     <>
-      <div className="topbar">
-        <span className="page-title">Script Generator <span className="sub">Story 7</span></span>
-        <div className="topbar-right">
-          <button className="btn btn-ghost" onClick={() => navigate('/test-cases')}>← Test Cases</button>
-        </div>
-      </div>
       <div className="content">
+        <div className="section-header" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <div className="section-title">Script Generator</div>
+          <div className="section-line" />
+          <div className="topbar-right" style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+            <button className="btn btn-ghost" onClick={() => navigate('/test-cases')}>← Test Cases</button>
+          </div>
+        </div>
         <div className="two-col">
           <div>
             <div className="card" style={{ marginBottom: 16 }}>
@@ -105,7 +106,7 @@ const ScriptGeneratorPage: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  className="btn btn-primary"
+                  className="btn btn-ghost"
                   style={{ width: '100%', justifyContent: 'center', padding: 11 }}
                   onClick={() => setModalOpen(true)}
                 >

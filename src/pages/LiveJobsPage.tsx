@@ -16,7 +16,7 @@ const LiveJobsPage: React.FC = () => {
         </span>
         <div className="topbar-right">
           <button className="btn btn-ghost" onClick={() => navigate('/')}>← Dashboard</button>
-          <button className="btn btn-primary" onClick={() => navigate('/new-crawl')}>＋ New Crawl</button>
+          <button className="btn btn-primary" onClick={() => navigate('/new-crawl')}>＋ Crawl</button>
         </div>
       </div>
       <div className="content">

@@ -14,9 +14,9 @@ const navSections = [
   {
     label: 'Crawler',
     items: [
-      { label: 'New Crawl', path: '/new-crawl', icon: '🔗', roles: ['admin', 'qa'] },
+      { label: 'Crawl', path: '/new-crawl', icon: '🔗', roles: ['admin', 'qa'] },
       { label: 'Live Jobs', path: '/live-jobs', icon: '⚡', roles: ['admin', 'qa', 'dev'], badge: 2 },
-      { label: 'Token Usage', path: '/tokens', icon: '🪙', roles: ['admin'] },
+      // { label: 'Token Usage', path: '/tokens', icon: '🪙', roles: ['admin'] },
     ],
   },
   {
