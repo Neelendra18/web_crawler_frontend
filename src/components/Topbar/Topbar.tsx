@@ -41,7 +41,9 @@ const Topbar: React.FC = () => {
           tabIndex={0}
           ref={dropdownRef}
         >
-          <div className="t-avatar" style={{ background: user.role === 'admin' ? 'linear-gradient(135deg, #f5a623, #e8870a)' : user.role === 'qa' ? 'linear-gradient(135deg, #5b6ef5, #3d52d5)' : 'linear-gradient(135deg, #00e5a0, #00b37a)' }}>
+          <div
+            className={`t-avatar ${user.role === 'admin' ? 'avatar-admin' : user.role === 'qa' ? 'avatar-qa' : 'avatar-user'}`}
+          >
             {user.name.split(' ').map((n) => n[0]).join('').toUpperCase()}
           </div>
           <div>

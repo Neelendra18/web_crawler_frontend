@@ -1,3 +1,4 @@
+import './Card.css';
 import React from 'react';
 
 const Card: React.FC<{ header?: React.ReactNode; body?: React.ReactNode; noPad?: boolean; children?: React.ReactNode }> = ({ header, body, noPad, children }) => (

@@ -12,7 +12,8 @@ const CenterPipeline: React.FC = () => {
   const [activeStep] = useState(2);
   return (
     <main className="main">
-      <div className="content">
+      <div className="main-content">
+        <div className="content">
         {/* Pipeline Steps */}
         <div className="section-header" style={{marginBottom: 18}}>
           <div className="section-title">Pipeline</div>
@@ -65,6 +66,7 @@ const CenterPipeline: React.FC = () => {
           <button className="btn btn-ghost">Download</button>
           <button className="btn btn-primary">Push to Git</button>
         </div>
+      </div>
       </div>
     </main>
   );

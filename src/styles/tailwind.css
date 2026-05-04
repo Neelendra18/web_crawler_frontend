@@ -6,21 +6,31 @@
 @tailwind utilities;
 
 :root {
-  --bg: #08090d;
-  --surface: #0f1118;
-  --surface2: #161820;
-  --surface3: #1e2130;
-  --border: rgba(255,255,255,0.07);
-  --border-hover: rgba(255,255,255,0.14);
-  --accent: #00e5a0;
-  --accent2: #5b6ef5;
-  --accent3: #ff6b6b;
-  --accent4: #f5a623;
-  --text: #f0f1f5;
-  --text-dim: #8b8fa8;
-  --text-muted: #4a4d60;
+  /* Backgrounds */
+  --bg-primary: #0B1220;
+  --bg-surface: #111827;
+  --bg-elevated: #1F2937;
+
+  /* Text */
+  --text-primary: #E5E7EB;
+  --text-secondary: #9CA3AF;
+
+  /* Borders */
+  --border-default: #1F2937;
+
+  /* Primary Action */
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+
+  /* Semantic */
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --error: #EF4444;
+
+  /* Radius */
   --radius: 12px;
   --radius-sm: 8px;
-  --glow: 0 0 40px rgba(0,229,160,0.12);
+
+  /* Shadows */
   --shadow: 0 8px 32px rgba(0,0,0,0.6);
 }

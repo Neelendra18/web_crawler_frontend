@@ -164,7 +164,7 @@ const CrawlPage: React.FC = () => {
                     <span className="pill">Word</span><span className="pill">Images</span>
                   </div>
                 </div>
-                <div style={{ marginTop: 12, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className="file-info-row">
                   <span>📄</span>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, fontWeight: 500 }}>swagger-openapi-v3.pdf</div>

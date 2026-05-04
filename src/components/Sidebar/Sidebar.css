@@ -1,8 +1,8 @@
 .sidebar {
   width: 240px;
   min-height: 100vh;
-  background: rgb(255, 255, 255);
-  border-right: 1px solid rgba(0,0,0,0.12);
+  background: black;
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -11,10 +11,12 @@
   overflow-y: auto;
   flex-shrink: 0;
 }
+
 .logo-area {
   padding: 18px 20px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid var(--border);
 }
+
 .logo {
   font-family: 'Syne', sans-serif;
   font-size: 22px;
@@ -24,32 +26,36 @@
   align-items: center;
   gap: 10px;
 }
+
 .logo-icon {
   width: 32px;
   height: 32px;
-  background: rgb(255,255,255);
-  border-radius: 8px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
 }
+
 .logo span {
-  color: rgb(70, 79, 235);
+  color: var(--accent);
 }
+
 .nav-section {
   padding: 16px 12px 8px;
 }
+
 .nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  color: black;
+  color: var(--text);
   background: transparent;
   transition: all 0.15s ease;
   border: 1.5px solid transparent;
@@ -57,8 +63,9 @@
   margin-bottom: 2px;
 }
 .nav-item:hover {
-  background: #f0f0f0;
-  color: black;
+  background: var(--surface2);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 .nav-item.active {
   background: #e0e0e0;
@@ -69,9 +76,4 @@
   font-size: 16px;
   width: 20px;
   text-align: center;
-}
-.content {
-  backdrop-filter: blur(20px);
-  background: rgba(8, 9, 13, .85);
-  min-height: 100vh;
 }

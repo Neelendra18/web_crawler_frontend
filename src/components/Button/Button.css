@@ -1,17 +1,22 @@
+
 .button {
   width: 100%;
   padding: 10px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-family: system-ui;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--surface2);
+  color: var(--text);
+  box-shadow: none;
 }
+
 
 .button:disabled {
   opacity: 0.6;
@@ -19,41 +24,50 @@
 }
 
 
+
 .button-primary {
-  background: rgb(70, 79, 235);
-  border-color: rgb(70, 79, 235);
-  color: rgb(255, 255, 255);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text);
+  box-shadow: var(--glow);
 }
+
 
 .button-primary:hover:not(:disabled) {
-  background: rgb(50, 59, 200);
-  border-color: rgb(70, 79, 235);
-  color: rgb(255, 255, 255);
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: var(--text);
+  filter: brightness(1.08);
 }
+
 
 .button-secondary {
-  background: rgb(255, 255, 255);
-  border-color: rgb(70, 79, 235);
-  color: rgb(70, 79, 235);
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--accent);
 }
 
+
 .button-secondary:hover:not(:disabled) {
-  background: rgb(240, 240, 255);
-  border-color: rgb(70, 79, 235);
-  color: rgb(70, 79, 235);
+  background: var(--surface2);
+  border-color: var(--accent);
+  color: var(--accent);
 }
+
 
 .button-danger {
   background: rgba(255, 68, 68, 0.15);
-  border-color: rgb(70, 79, 235);
-  color: rgb(70, 79, 235);
+  border-color: var(--accent3);
+  color: var(--accent3);
 }
+
 
 .button-danger:hover:not(:disabled) {
   background: rgba(255, 68, 68, 0.25);
-  border-color: rgb(70, 79, 235);
-  color: rgb(70, 79, 235);
+  border-color: var(--accent3);
+  color: var(--accent3);
 }
+
 
 .button-spinner {
   width: 14px;

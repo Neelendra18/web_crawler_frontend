@@ -30,16 +30,13 @@ body {
 #auth-gate {
   position: fixed; inset: 0; z-index: 9999;
   display: flex; align-items: center; justify-content: center;
-  background: var(--bg);
+  background: linear-gradient(45deg, black, transparent);
   min-height: 100vh;
 }
 #auth-gate::before {
   content: '';
   position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(0,229,160,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,229,160,0.02) 1px, transparent 1px);
-  background-size: 48px 48px;
+  background: none;
   pointer-events: none;
 }
 #auth-gate::after {
@@ -47,14 +44,14 @@ body {
   position: absolute;
   width: 600px; height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(91,110,245,0.06) 0%, transparent 70%);
+  background: none;
   top: 50%; left: 50%;
   transform: translate(-50%,-50%);
   pointer-events: none;
 }
 .login-card {
   position: relative; z-index: 1;
-  background: var(--surface);
+  background: #000;
   border: 1px solid var(--border);
   border-radius: 20px;
   padding: 44px 48px;
@@ -72,11 +69,11 @@ body {
 }
 .login-logo-mark {
   width: 44px; height: 44px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: #181c24;
   border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   font-size: 22px;
-  box-shadow: 0 0 24px rgba(0,229,160,0.25);
+  box-shadow: none;
 }
 .login-logo-text {
   font-family: 'Syne', sans-serif;
@@ -177,9 +174,9 @@ body {
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 700; color: white; flex-shrink: 0;
 }
-.demo-av-admin { background: linear-gradient(135deg, #f5a623, #e8870a); }
-.demo-av-qa { background: linear-gradient(135deg, var(--accent2), #3d52d5); }
-.demo-av-dev { background: linear-gradient(135deg, var(--accent), #00b37a); }
+.demo-av-admin { background: #f5a623; }
+.demo-av-qa { background: #5b6ef5; }
+.demo-av-dev { background: #00e5a0; }
 .demo-account-name { font-size: 13px; font-weight: 500; }
 .demo-account-email { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
 .demo-role-chip {
