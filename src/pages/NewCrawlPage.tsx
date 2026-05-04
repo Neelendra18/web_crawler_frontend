@@ -1,6 +1,14 @@
 import React, { useState, useRef } from 'react';
 
-const defaultCrawl = {
+interface CrawlConfig {
+  name: string;
+  url: string;
+  depth: string;
+  mode: string;
+  date: string;
+}
+
+const defaultCrawl: CrawlConfig = {
   name: '',
   url: '',
   depth: '2',
@@ -10,8 +18,8 @@ const defaultCrawl = {
 
 const CrawlPage: React.FC = () => {
   const [tab, setTabState] = useState<'new' | 'history'>('new');
-  const [editingCrawl, setEditingCrawl] = useState<any | null>(null);
-  const [form, setForm] = useState<any>(defaultCrawl);
+  const [editingCrawl, setEditingCrawl] = useState<CrawlConfig | null>(null);
+  const [form, setForm] = useState<CrawlConfig>(defaultCrawl);
 
   // Helper to switch tabs and clear editing state if going to New
   const setTab = (tab: 'new' | 'history') => {
@@ -23,14 +31,14 @@ const CrawlPage: React.FC = () => {
   };
   const urlInputRef = useRef<HTMLInputElement>(null);
   // Demo crawl history
-  const crawlHistory = [
-    { name: 'Checkout Flow', url: 'https://shop.acme.com/checkout', date: '2026-05-01' },
-    { name: 'Product Page', url: 'https://shop.acme.com/product', date: '2026-04-30' },
-    { name: 'Login Test', url: 'https://shop.acme.com/login', date: '2026-04-29' },
+  const crawlHistory: CrawlConfig[] = [
+    { name: 'Checkout Flow', url: 'https://shop.acme.com/checkout', date: '2026-05-01', depth: '2', mode: 'User Flow' },
+    { name: 'Product Page', url: 'https://shop.acme.com/product', date: '2026-04-30', depth: '2', mode: 'User Flow' },
+    { name: 'Login Test', url: 'https://shop.acme.com/login', date: '2026-04-29', depth: '2', mode: 'User Flow' },
   ];
 
   // When a crawl is selected from history, load it for editing
-  const handleEditCrawl = (crawl: any) => {
+  const handleEditCrawl = (crawl: CrawlConfig) => {
     setEditingCrawl(crawl);
     setForm(crawl);
     setTab('new');
