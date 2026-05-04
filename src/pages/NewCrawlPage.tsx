@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import SimpleSelect from '../components/SimpleSelect';
 
 interface CrawlConfig {
   name: string;
@@ -20,6 +21,8 @@ const CrawlPage: React.FC = () => {
   const [tab, setTabState] = useState<'new' | 'history'>('new');
   const [editingCrawl, setEditingCrawl] = useState<CrawlConfig | null>(null);
   const [form, setForm] = useState<CrawlConfig>(defaultCrawl);
+  // Dropdown state: 'url', 'document', or 'both'
+  const [sectionSelect, setSectionSelect] = useState<'url' | 'document' | 'both'>('url');
 
   // Helper to switch tabs and clear editing state if going to New
   const setTab = (tab: 'new' | 'history') => {
@@ -131,18 +134,34 @@ const CrawlPage: React.FC = () => {
                 <span className="card-title">Crawl Configuration {editingCrawl ? <span style={{ color: 'var(--accent4)', fontWeight: 400, fontSize: 13 }}> (Editing: {editingCrawl.name})</span> : null}</span>
               </div>
               <div className="card-body">
-                <div className="input-group">
-                  <div className="input-label">Target URL</div>
-                  <input
-                    className="input-field"
-                    type="url"
-                    name="url"
-                    placeholder="https://yourapp.com/feature"
-                    value={form.url}
-                    onChange={handleFormChange}
-                    ref={urlInputRef}
+                {/* Section selection dropdown */}
+                <div className="input-group" style={{ marginBottom: 18 }}>
+                  <div className="input-label">Select Input Method</div>
+                  <SimpleSelect
+                    value={sectionSelect}
+                    onChange={v => setSectionSelect(v as 'url' | 'document' | 'both')}
+                    options={[
+                      { label: 'Target URL', value: 'url' },
+                      { label: 'Document Upload', value: 'document' },
+                      { label: 'Both', value: 'both' },
+                    ]}
                   />
                 </div>
+                {/* Conditionally render Target URL */}
+                {(sectionSelect === 'url' || sectionSelect === 'both') && (
+                  <div className="input-group">
+                    <div className="input-label">Target URL</div>
+                    <input
+                      className="input-field"
+                      type="url"
+                      name="url"
+                      placeholder="https://yourapp.com/feature"
+                      value={form.url}
+                      onChange={handleFormChange}
+                      ref={urlInputRef}
+                    />
+                  </div>
+                )}
                 {/* ...existing code for other fields... */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
                   <div className="input-group" style={{ marginBottom: 0 }}>
@@ -162,25 +181,30 @@ const CrawlPage: React.FC = () => {
                     </select>
                   </div>
                 </div>
-                <div className="input-label" style={{ marginBottom: 8 }}>Upload Documents (optional)</div>
-                <div className="drop-zone">
-                  <div className="drop-zone-icon">☁️</div>
-                  <div className="drop-zone-text">Drag & drop files or <strong>browse</strong></div>
-                  <div className="drop-zone-sub">PDF · XLSX · DOCX · PNG · JPG</div>
-                  <div className="format-pills">
-                    <span className="pill">PDF</span><span className="pill">Excel</span>
-                    <span className="pill">Word</span><span className="pill">Images</span>
-                  </div>
-                </div>
-                <div className="file-info-row">
-                  <span>📄</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 500 }}>swagger-openapi-v3.pdf</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace' }}>2.4 MB · uploading…</div>
-                    <div className="progress-bar" style={{ marginTop: 6 }}><div className="progress-fill running" style={{ width: '64%' }}></div></div>
-                  </div>
-                  <span style={{ color: 'var(--text-muted)', cursor: 'pointer' }}>✕</span>
-                </div>
+                {/* Conditionally render Document Upload */}
+                {(sectionSelect === 'document' || sectionSelect === 'both') && (
+                  <>
+                    <div className="input-label" style={{ marginBottom: 8 }}>Upload Documents (optional)</div>
+                    <div className="drop-zone">
+                      <div className="drop-zone-icon">☁️</div>
+                      <div className="drop-zone-text">Drag & drop files or <strong>browse</strong></div>
+                      <div className="drop-zone-sub">PDF · XLSX · DOCX · PNG · JPG</div>
+                      <div className="format-pills">
+                        <span className="pill">PDF</span><span className="pill">Excel</span>
+                        <span className="pill">Word</span><span className="pill">Images</span>
+                      </div>
+                    </div>
+                    <div className="file-info-row">
+                      <span>📄</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 500 }}>swagger-openapi-v3.pdf</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace' }}>2.4 MB · uploading…</div>
+                        <div className="progress-bar" style={{ marginTop: 6 }}><div className="progress-fill running" style={{ width: '64%' }}></div></div>
+                      </div>
+                      <span style={{ color: 'var(--text-muted)', cursor: 'pointer' }}>✕</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
