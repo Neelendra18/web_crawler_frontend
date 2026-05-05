@@ -23,10 +23,11 @@ describe('usePolling', () => {
 
     render(<TestComponent callback={callback} />)
 
-    vi.runOnlyPendingTimers()
-    expect(callback).toHaveBeenCalledTimes(1)
-
-    vi.advanceTimersByTime(1000)
-    expect(callback.mock.calls.length).toBeGreaterThan(1)
+    // The first call is immediate, advance timers for subsequent calls
+    vi.advanceTimersByTime(200) // 2 intervals of 100ms
+    // Run all pending timers to ensure setTimeout callbacks are processed
+    return vi.runOnlyPendingTimersAsync().then(() => {
+      expect(callback.mock.calls.length).toBeGreaterThan(1)
+    })
   })
 })

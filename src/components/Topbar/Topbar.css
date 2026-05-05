@@ -1,7 +1,8 @@
+.topbar {
   position: sticky;
   top: 0;
   z-index: 2100;
-  background: rgba(8,9,13,0.85);
+  background: linear-gradient(45deg, black, transparent);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255,255,255,0.07);
   padding: 14px 32px;
@@ -20,11 +21,13 @@
   align-items: center;
   gap: 12px;
 }
+
+.topbar-user {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 6px 12px 6px 8px;
-  background: #161820;
+  background: aliceblue;
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 8px;
   cursor: pointer;
@@ -34,7 +37,7 @@
 }
 .topbar-user:hover {
   border-color: rgba(255,255,255,0.14);
-  background: #1e2130;
+  background: #fff;
 }
 .t-avatar {
   width: 28px;
@@ -45,22 +48,32 @@
   justify-content: center;
   font-size: 11px;
   font-weight: 700;
-  color: white;
+  color: black;
+}
+.avatar-admin {
+  background: linear-gradient(45deg, black, transparent);
+}
+.avatar-qa {
+  background: linear-gradient(135deg, #5b6ef5, #3d52d5);
+}
+.avatar-user {
+  background: linear-gradient(135deg, #00e5a0, #00b37a);
 }
 .t-name {
   font-size: 13px;
   font-weight: 500;
+  color: black;
 }
 .t-role {
   font-size: 10px;
-  color: #8b8fa8;
+  color: black;
   font-family: 'DM Mono', monospace;
 }
 .user-dropdown {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  background: #0f1118;
+  background: #000;
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 12px;
   padding: 8px;
@@ -81,7 +94,7 @@
   border-radius: 8px;
   font-size: 13px;
   cursor: pointer;
-  color: #8b8fa8;
+  color: black;
   transition: all 0.12s;
 }
 .dd-item:hover {
@@ -96,7 +109,7 @@
 }
 .dd-sep {
   height: 1px;
-  background: rgba(255,255,255,0.07);
+  background: black;
   margin: 6px 0;
 }
 @keyframes dropIn {

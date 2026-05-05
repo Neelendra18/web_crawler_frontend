@@ -25,13 +25,25 @@ export interface LogContext {
   sessionId?: string;
   component?: string;
   action?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 class Logger {
+  // Mask PII fields in context (e.g., email, password, token, etc.)
+  private maskSensitive(context?: LogContext): LogContext | undefined {
+    if (!context) return context;
+    const SENSITIVE_KEYS = ['email', 'password', 'token', 'accessToken', 'refreshToken', 'ssn', 'creditCard', 'secret'];
+    const masked: LogContext = { ...context };
+    for (const key of SENSITIVE_KEYS) {
+      if (masked[key]) masked[key] = '[MASKED]';
+    }
+    return masked;
+  }
+
   private createLogMessage(level: string, message: string, context?: LogContext): string {
     const timestamp = new Date().toISOString();
-    const contextStr = context ? ` | ${JSON.stringify(context)}` : '';
+    const maskedContext = this.maskSensitive(context);
+    const contextStr = maskedContext ? ` | ${JSON.stringify(maskedContext)}` : '';
     return `[${timestamp}] ${level.toUpperCase()}: ${message}${contextStr}`;
   }
 
@@ -56,9 +68,20 @@ class Logger {
   error(message: string, error?: Error, context?: LogContext): void {
     const logMessage = this.createLogMessage('error', message, { ...context, error: error?.message });
     log.error(logMessage, error);
+    // Only pass primitive values to Sentry for tags/extra
+    const filterPrimitives = (obj?: LogContext) => {
+      if (!obj) return undefined;
+      const out: { [key: string]: string | number | boolean } = {};
+      for (const [k, v] of Object.entries(obj)) {
+        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+          out[k] = v;
+        }
+      }
+      return out;
+    };
     Sentry.captureException(error || new Error(message), {
-      tags: context,
-      extra: context,
+      tags: filterPrimitives(context),
+      extra: filterPrimitives(context),
     });
   }
 
@@ -78,8 +101,8 @@ class Logger {
     this[level](message, { ...context, status, duration });
   }
 
-  apiError(method: string, url: string, error: any, context?: LogContext): void {
-    this.error(`API Error: ${method} ${url}`, error, { ...context, method, url });
+  apiError(method: string, url: string, error: unknown, context?: LogContext): void {
+    this.error(`API Error: ${method} ${url}`, error instanceof Error ? error : new Error(String(error)), { ...context, method, url });
   }
 
   // User action logging

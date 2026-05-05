@@ -14,9 +14,9 @@ const navSections = [
   {
     label: 'Crawler',
     items: [
-      { label: 'New Crawl', path: '/new-crawl', icon: '🔗', roles: ['admin', 'qa'] },
+      { label: 'Crawl', path: '/new-crawl', icon: '🔗', roles: ['admin', 'qa'] },
       { label: 'Live Jobs', path: '/live-jobs', icon: '⚡', roles: ['admin', 'qa', 'dev'], badge: 2 },
-      { label: 'Token Usage', path: '/tokens', icon: '🪙', roles: ['admin'] },
+      // { label: 'Token Usage', path: '/tokens', icon: '🪙', roles: ['admin'] },
     ],
   },
   {
@@ -53,7 +53,7 @@ const Sidebar: React.FC = () => {
             >
               <span className="icon">{item.icon}</span> {item.label}
               {item.badge && (
-                <span className={`badge${item.badgeClass ? ' ' + item.badgeClass : ''}`}>{item.badge}</span>
+                <span className="badge">{item.badge}</span>
               )}
             </Link>
           ))}

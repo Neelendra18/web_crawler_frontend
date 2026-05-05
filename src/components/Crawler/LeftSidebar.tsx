@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Modal from '../Modal/Modal';
 
 const LeftSidebar: React.FC = () => {
   const [url, setUrl] = useState('');
@@ -21,7 +22,12 @@ const LeftSidebar: React.FC = () => {
             type="url"
             placeholder="https://example.com"
             value={url}
-            onChange={e => setUrl(e.target.value)}
+            onChange={e => {
+                const v = e.target.value.trim().replace(/\s/g, '');
+              if (v.length > 2048) return;
+              if (v && !/^https?:\/\//.test(v)) return;
+              setUrl(v);
+            }}
             autoComplete="off"
           />
         </div>
@@ -31,7 +37,10 @@ const LeftSidebar: React.FC = () => {
             id="auth-method"
             className="input-field"
             value={auth}
-            onChange={e => setAuth(e.target.value)}
+            onChange={e => {
+              const allowed = ['none', 'basic', 'token'];
+              if (allowed.includes(e.target.value)) setAuth(e.target.value);
+            }}
           >
             <option value="none">None</option>
             <option value="basic">Basic Auth</option>
@@ -44,7 +53,10 @@ const LeftSidebar: React.FC = () => {
             id="framework"
             className="input-field"
             value={framework}
-            onChange={e => setFramework(e.target.value)}
+            onChange={e => {
+              const allowed = ['playwright', 'cypress', 'selenium'];
+              if (allowed.includes(e.target.value)) setFramework(e.target.value);
+            }}
           >
             <option value="playwright">Playwright</option>
             <option value="cypress">Cypress</option>
@@ -58,9 +70,21 @@ const LeftSidebar: React.FC = () => {
         >
           Start Crawl
         </button>
+        <Modal
+          open={status === 'running'}
+          onClose={() => setStatus('idle')}
+          title="Crawl In Progress"
+          actions={<button className="btn" onClick={() => setStatus('idle')}>Close</button>}
+        >
+          <div style={{textAlign: 'center', padding: 16}}>
+            <div className="status-chip running" style={{marginBottom: 12}}>Running</div>
+            <div>Live crawl status and progress will appear here.</div>
+          </div>
+        </Modal>
         <div style={{marginTop: 24, textAlign: 'center'}}>
           {status === 'idle' && <span className="status-chip queued">Idle</span>}
-          {status === 'running' && <span className="status-chip running">Running</span>}
+          {/* Only show 'Running' chip if modal is not open */}
+          {status === 'running' ? null : null}
           {status === 'done' && <span className="status-chip done">Done</span>}
         </div>
       </div>

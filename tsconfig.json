@@ -30,7 +30,7 @@
     "jsx": "react-jsx",
     "isolatedModules": true
   },
-  "include": ["src"],
+  "include": ["src", "vite-env.d.ts"],
   "exclude": ["node_modules", "dist", "build"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

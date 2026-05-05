@@ -14,6 +14,7 @@ node_modules
 # Build artifacts
 *.js
 *.d.ts
+!vite-env.d.ts
 *.js.map
 *.d.ts.map
 

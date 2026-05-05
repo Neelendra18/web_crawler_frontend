@@ -30,7 +30,7 @@ export const AppRouter: React.FC = () => {
       ) : (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
           <Sidebar />
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <div className="main-content">
             <Topbar />
             <div style={{ flex: 1 }}>
               <Routes>
