@@ -40,3 +40,12 @@ body {
 }
 
 /* Add more styles as needed from the HTML prototype */
+
+.modal {
+  background: black !important;
+}
+
+.status-chip.running {
+  background: green !important;
+  color: #fff !important;
+}

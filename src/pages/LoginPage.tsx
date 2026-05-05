@@ -68,7 +68,13 @@ const LoginPage: React.FC = () => {
             placeholder="you@company.com"
             autoComplete="email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={e => {
+              let v = e.target.value.trim();
+              if (v.length > 256) return;
+              // Basic email format check
+              if (v && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return;
+              setEmail(v);
+            }}
             required
             disabled={loading}
           />
@@ -82,7 +88,11 @@ const LoginPage: React.FC = () => {
             placeholder="••••••••"
             autoComplete="current-password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={e => {
+              let v = e.target.value.trim();
+              if (v.length > 128) return;
+              setPassword(v);
+            }}
             required
             disabled={loading}
           />

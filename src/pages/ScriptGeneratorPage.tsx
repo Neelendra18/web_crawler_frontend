@@ -24,14 +24,25 @@ const ScriptGeneratorPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingGenerate, setPendingGenerate] = useState(false);
 
-  const handleFWSelect = (fw: string) => setSelectedFW(fw);
-  const handleLangChange = (e: React.ChangeEvent<HTMLSelectElement>) => setLanguage(e.target.value);
-  const handleRunnerChange = (e: React.ChangeEvent<HTMLSelectElement>) => setRunner(e.target.value);
+  const handleFWSelect = (fw: string) => {
+    const allowed = frameworks.map(f => f.key);
+    if (allowed.includes(fw)) setSelectedFW(fw);
+  };
+  const handleLangChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const allowed = languages;
+    if (allowed.includes(e.target.value)) setLanguage(e.target.value);
+  };
+  const handleRunnerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const allowed = runners;
+    if (allowed.includes(e.target.value)) setRunner(e.target.value);
+  };
   const handleCaseToggle = (tc: string) => {
-    if (tc === 'All (312)') {
+    let v = tc.trim();
+    if (v.length > 32) return;
+    if (v === 'All (312)') {
       setSelectedCases(testCases.slice(0, 5));
     } else {
-      setSelectedCases(selectedCases.includes(tc) ? selectedCases.filter(c => c !== tc) : [...selectedCases, tc]);
+      setSelectedCases(selectedCases.includes(v) ? selectedCases.filter(c => c !== v) : [...selectedCases, v]);
     }
   };
   const handleTab = (tab: string) => setActiveTab(tab);

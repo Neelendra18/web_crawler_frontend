@@ -56,11 +56,20 @@ const ProfilePage: React.FC = () => {
               </div>
               <div className="input-group">
                 <div className="input-label">Full Name</div>
-                <input className="input-field" value={name} onChange={e => setName(e.target.value)} />
+                <input className="input-field" value={name} onChange={e => {
+                  let v = e.target.value.trim();
+                  if (v.length > 64) return;
+                  setName(v);
+                }} />
               </div>
               <div className="input-group">
                 <div className="input-label">Email</div>
-                <input className="input-field" value={email} type="email" onChange={e => setEmail(e.target.value)} />
+                <input className="input-field" value={email} type="email" onChange={e => {
+                  let v = e.target.value.trim();
+                  if (v.length > 256) return;
+                  if (v && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return;
+                  setEmail(v);
+                }} />
               </div>
               <button className="btn btn-primary">Save Changes</button>
             </div>
@@ -74,15 +83,27 @@ const ProfilePage: React.FC = () => {
             <div className="card-body">
               <div className="input-group">
                 <div className="input-label">Current Password</div>
-                <input className="input-field" type="password" placeholder="••••••••" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+                <input className="input-field" type="password" placeholder="••••••••" value={currentPassword} onChange={e => {
+                  let v = e.target.value.trim();
+                  if (v.length > 128) return;
+                  setCurrentPassword(v);
+                }} />
               </div>
               <div className="input-group">
                 <div className="input-label">New Password</div>
-                <input className="input-field" type="password" placeholder="••••••••" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                <input className="input-field" type="password" placeholder="••••••••" value={newPassword} onChange={e => {
+                  let v = e.target.value.trim();
+                  if (v.length > 128) return;
+                  setNewPassword(v);
+                }} />
               </div>
               <div className="input-group">
                 <div className="input-label">Confirm New Password</div>
-                <input className="input-field" type="password" placeholder="••••••••" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                <input className="input-field" type="password" placeholder="••••••••" value={confirmPassword} onChange={e => {
+                  let v = e.target.value.trim();
+                  if (v.length > 128) return;
+                  setConfirmPassword(v);
+                }} />
               </div>
               <button className="btn btn-primary">Update Password</button>
             </div>
@@ -116,7 +137,7 @@ const ProfilePage: React.FC = () => {
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                   <div style={{ fontSize: 13 }}>Session Timeout</div>
-                  <select style={{ fontSize: 12, padding: '5px 24px 5px 8px' }} value={sessionTimeout}>
+                  <select style={{ fontSize: 12, padding: '5px 24px 5px 8px' }} value={sessionTimeout} onChange={() => {}}>
                     <option>30 minutes</option>
                     <option>1 hour</option>
                     <option>4 hours</option>

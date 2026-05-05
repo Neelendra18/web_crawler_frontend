@@ -29,9 +29,21 @@ export interface LogContext {
 }
 
 class Logger {
+  // Mask PII fields in context (e.g., email, password, token, etc.)
+  private maskSensitive(context?: LogContext): LogContext | undefined {
+    if (!context) return context;
+    const SENSITIVE_KEYS = ['email', 'password', 'token', 'accessToken', 'refreshToken', 'ssn', 'creditCard', 'secret'];
+    const masked: LogContext = { ...context };
+    for (const key of SENSITIVE_KEYS) {
+      if (masked[key]) masked[key] = '[MASKED]';
+    }
+    return masked;
+  }
+
   private createLogMessage(level: string, message: string, context?: LogContext): string {
     const timestamp = new Date().toISOString();
-    const contextStr = context ? ` | ${JSON.stringify(context)}` : '';
+    const maskedContext = this.maskSensitive(context);
+    const contextStr = maskedContext ? ` | ${JSON.stringify(maskedContext)}` : '';
     return `[${timestamp}] ${level.toUpperCase()}: ${message}${contextStr}`;
   }
 

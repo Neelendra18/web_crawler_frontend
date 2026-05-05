@@ -307,13 +307,12 @@
   .input-field::placeholder { color: var(--text-muted); }
 
   .drop-zone {
-    border: 1.5px dashed var(--border);
+    border: 1.5px dashed var(--accent);
     border-radius: var(--radius-sm);
     padding: 28px; text-align: center;
     cursor: pointer; transition: all 0.2s;
-    background: #fff;
+    background: rgba(0,229,160,0.03);
   }
-  .drop-zone:hover { border-color: var(--accent); background: rgba(0,229,160,0.03); }
   .drop-zone-icon { font-size: 32px; margin-bottom: 8px; }
   .drop-zone-text { font-size: 13px; color: var(--text-dim); }
   .drop-zone-text strong { color: var(--accent); }
