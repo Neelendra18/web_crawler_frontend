@@ -116,7 +116,7 @@ export function useForm<T extends Record<string, unknown>>(initialValues: T) {
     if (type === 'checkbox') fieldValue = (e.target as HTMLInputElement).checked;
     // Basic sanitization for text/email/password fields
     if (['text', 'email', 'password'].includes(type)) {
-      let v = String(value).trim();
+      const v = String(value).trim();
       if (type === 'email' && v.length > 256) return;
       if (type === 'text' && v.length > 256) return;
       if (type === 'password' && v.length > 128) return;

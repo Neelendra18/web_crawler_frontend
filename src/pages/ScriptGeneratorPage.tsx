@@ -37,7 +37,7 @@ const ScriptGeneratorPage: React.FC = () => {
     if (allowed.includes(e.target.value)) setRunner(e.target.value);
   };
   const handleCaseToggle = (tc: string) => {
-    let v = tc.trim();
+    const v = tc.trim();
     if (v.length > 32) return;
     if (v === 'All (312)') {
       setSelectedCases(testCases.slice(0, 5));

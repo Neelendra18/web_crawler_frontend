@@ -2,7 +2,8 @@ import React from 'react';
 
 const SearchBar: React.FC<{ value: string; onChange: (v: string) => void; placeholder?: string }> = ({ value, onChange, placeholder }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let v = e.target.value.trim().replace(/[\x00-\x1F\x7F]/g, '');
+    // Remove ASCII control characters (0-31, 127)
+    let v = e.target.value.trim().replace(/[\u0000-\u001F\u007F]/g, '');
     if (v.length > 128) v = v.slice(0, 128);
     onChange(v);
   };

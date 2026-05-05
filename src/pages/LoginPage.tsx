@@ -69,7 +69,7 @@ const LoginPage: React.FC = () => {
             autoComplete="email"
             value={email}
             onChange={e => {
-              let v = e.target.value.trim();
+              const v = e.target.value.trim();
               if (v.length > 256) return;
               // Basic email format check
               if (v && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return;
@@ -89,7 +89,7 @@ const LoginPage: React.FC = () => {
             autoComplete="current-password"
             value={password}
             onChange={e => {
-              let v = e.target.value.trim();
+              const v = e.target.value.trim();
               if (v.length > 128) return;
               setPassword(v);
             }}

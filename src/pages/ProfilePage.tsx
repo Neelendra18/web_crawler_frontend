@@ -57,7 +57,7 @@ const ProfilePage: React.FC = () => {
               <div className="input-group">
                 <div className="input-label">Full Name</div>
                 <input className="input-field" value={name} onChange={e => {
-                  let v = e.target.value.trim();
+                  const v = e.target.value.trim();
                   if (v.length > 64) return;
                   setName(v);
                 }} />
@@ -65,7 +65,7 @@ const ProfilePage: React.FC = () => {
               <div className="input-group">
                 <div className="input-label">Email</div>
                 <input className="input-field" value={email} type="email" onChange={e => {
-                  let v = e.target.value.trim();
+                  const v = e.target.value.trim();
                   if (v.length > 256) return;
                   if (v && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return;
                   setEmail(v);
@@ -84,7 +84,7 @@ const ProfilePage: React.FC = () => {
               <div className="input-group">
                 <div className="input-label">Current Password</div>
                 <input className="input-field" type="password" placeholder="••••••••" value={currentPassword} onChange={e => {
-                  let v = e.target.value.trim();
+                  const v = e.target.value.trim();
                   if (v.length > 128) return;
                   setCurrentPassword(v);
                 }} />
@@ -92,7 +92,7 @@ const ProfilePage: React.FC = () => {
               <div className="input-group">
                 <div className="input-label">New Password</div>
                 <input className="input-field" type="password" placeholder="••••••••" value={newPassword} onChange={e => {
-                  let v = e.target.value.trim();
+                  const v = e.target.value.trim();
                   if (v.length > 128) return;
                   setNewPassword(v);
                 }} />
@@ -100,7 +100,7 @@ const ProfilePage: React.FC = () => {
               <div className="input-group">
                 <div className="input-label">Confirm New Password</div>
                 <input className="input-field" type="password" placeholder="••••••••" value={confirmPassword} onChange={e => {
-                  let v = e.target.value.trim();
+                  const v = e.target.value.trim();
                   if (v.length > 128) return;
                   setConfirmPassword(v);
                 }} />
