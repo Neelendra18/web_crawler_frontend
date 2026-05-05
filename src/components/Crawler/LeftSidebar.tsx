@@ -23,7 +23,7 @@ const LeftSidebar: React.FC = () => {
             placeholder="https://example.com"
             value={url}
             onChange={e => {
-              let v = e.target.value.trim().replace(/\s/g, '');
+                const v = e.target.value.trim().replace(/\s/g, '');
               if (v.length > 2048) return;
               if (v && !/^https?:\/\//.test(v)) return;
               setUrl(v);
