@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { crawlerService } from '@services/crawlerService';
 import { CrawlStartRequest, CrawlResultsResponse, CrawlStatusResponse } from '@app-types/index';
+import FileUpload from '@components/FileUpload/FileUpload';
 import './CrawlerPage.css';
 
 interface CrawlJob {
@@ -25,7 +26,9 @@ const CrawlPage: React.FC = () => {
   const [section, setSection] = useState<'new' | 'history'>('new');
 
   // Form state
+  const [inputType, setInputType] = useState<'url' | 'document'>('url');
   const [url, setUrl] = useState('');
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [maxDepth, setMaxDepth] = useState(2);
   const [excludedUrls, setExcludedUrls] = useState('');
 
@@ -162,14 +165,21 @@ const CrawlPage: React.FC = () => {
     setSuccessMessage(null);
 
     // Validation
-    if (!url.trim()) {
-      setError('Please enter a URL');
-      return;
-    }
+    if (inputType === 'url') {
+      if (!url.trim()) {
+        setError('Please enter a URL');
+        return;
+      }
 
-    if (!validateUrl(url)) {
-      setError('Invalid URL format. Use https://example.com');
-      return;
+      if (!validateUrl(url)) {
+        setError('Invalid URL format. Use https://example.com');
+        return;
+      }
+    } else {
+      if (!documentFile) {
+        setError('Please select a document to upload');
+        return;
+      }
     }
 
     if (maxDepth < 1 || maxDepth > 10) {
@@ -184,7 +194,7 @@ const CrawlPage: React.FC = () => {
       abortControllerRef.current = new AbortController();
 
       const request: CrawlStartRequest = {
-        base_url: url,
+        base_url: inputType === 'url' ? url : documentFile!.name,
         max_depth: maxDepth,
         excluded_urls: excludedUrls.trim() || undefined,
       };
@@ -200,11 +210,13 @@ const CrawlPage: React.FC = () => {
         unique_urls_discovered: 0,
       });
 
+      const sourceUrl = inputType === 'url' ? url : `📄 ${documentFile!.name}`;
+
       // Add to history
       setCrawlHistory(prev => [
         {
           jobId: response.job_id,
-          url,
+          url: sourceUrl,
           status: 'pending',
           createdAt: new Date(),
           pagesDiscovered: 0,
@@ -213,7 +225,7 @@ const CrawlPage: React.FC = () => {
         ...prev,
       ]);
 
-      setSuccessMessage('✓ Crawl job started!');
+      setSuccessMessage(`✓ Crawl job started for ${inputType === 'url' ? 'URL' : 'document'}!`);
       setError(null);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to start crawl';
@@ -378,26 +390,67 @@ const CrawlPage: React.FC = () => {
           {section === 'new' && (
             <div className="card" style={{ padding: 32, marginBottom: 32 }}>
               <form onSubmit={handleStartCrawl}>
-                {/* URL Input */}
+                {/* Input Type Selector */}
                 <div className="input-group" style={{ marginBottom: 18 }}>
-                  <div className="input-label">Target URL *</div>
-                  <input
+                  <div className="input-label">Input Source *</div>
+                  <select
                     className="input-field"
-                    type="url"
-                    placeholder="https://example.com"
-                    value={url}
-                    onChange={e => setUrl(e.target.value)}
+                    value={inputType}
+                    onChange={e => setInputType(e.target.value as 'url' | 'document')}
                     disabled={
                       isLoading ||
                       jobStatus?.status === 'running' ||
                       jobStatus?.status === 'pending'
                     }
-                    autoComplete="off"
-                  />
+                  >
+                    <option value="url">Website URL</option>
+                    <option value="document">Upload Document</option>
+                  </select>
                   <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
-                    Enter the website URL you want to crawl
+                    Choose whether to crawl a website or upload a document
                   </div>
                 </div>
+
+                {/* URL Input (conditional) */}
+                {inputType === 'url' ? (
+                  <div className="input-group" style={{ marginBottom: 18 }}>
+                    <div className="input-label">Target URL *</div>
+                    <input
+                      className="input-field"
+                      type="url"
+                      placeholder="https://example.com"
+                      value={url}
+                      onChange={e => setUrl(e.target.value)}
+                      disabled={
+                        isLoading ||
+                        jobStatus?.status === 'running' ||
+                        jobStatus?.status === 'pending'
+                      }
+                      autoComplete="off"
+                    />
+                    <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
+                      Enter the website URL you want to crawl
+                    </div>
+                  </div>
+                ) : (
+                  <div className="input-group" style={{ marginBottom: 18 }}>
+                    <FileUpload
+                      label="Document File"
+                      accept=".pdf,.doc,.docx,.txt,.md,.brd"
+                      onFileSelect={setDocumentFile}
+                      selectedFile={documentFile}
+                      disabled={
+                        isLoading ||
+                        jobStatus?.status === 'running' ||
+                        jobStatus?.status === 'pending'
+                      }
+                      maxSizeMB={50}
+                    />
+                    <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
+                      Upload a document to generate tests from
+                    </div>
+                  </div>
+                )}
 
                 {/* Crawl Depth */}
                 <div
