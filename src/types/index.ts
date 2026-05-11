@@ -115,12 +115,27 @@ export interface TestCase {
   code: string;
 }
 
+// Auth Types
+export type AuthType = 'None (Public)' | 'Basic' | 'OAuth2' | 'API Key';
+
+export interface AuthConfig {
+  [key: string]: string | number | boolean | undefined;
+}
+
 // UI State Types
 export interface CrawlerState {
-  isLoading: boolean;
+  isLoading?: boolean;
   error: string | null;
-  currentJobId: string | null;
-  jobStatus: string | null;
+  currentJobId?: string | null;
+  jobStatus?: string | null;
+  inputType: 'url' | 'document';
+  websiteUrl: string;
+  documentFile: File | null;
+  authType: AuthType;
+  authConfig: AuthConfig;
+  framework: 'Playwright' | 'Selenium';
+  language: 'TypeScript' | 'Python';
+  isRunning: boolean;
 }
 
 export interface ProcessingState {

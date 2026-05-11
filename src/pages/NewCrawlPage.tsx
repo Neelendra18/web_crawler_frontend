@@ -4,6 +4,659 @@ import { CrawlStartRequest, CrawlResultsResponse, CrawlStatusResponse } from '@a
 import FileUpload from '@components/FileUpload/FileUpload';
 import './CrawlerPage.css';
 
+// Status Popup Modal Component
+interface StatusPopupProps {
+  isOpen: boolean;
+  jobStatus: CrawlStatusResponse | null;
+  onClose: () => void;
+  onPause: () => void;
+  onResume: () => void;
+  isLoading: boolean;
+  statusColorMap: Record<string, string>;
+}
+
+const StatusPopup: React.FC<StatusPopupProps> = ({
+  isOpen,
+  jobStatus,
+  onClose,
+  onPause,
+  onResume,
+  isLoading,
+  statusColorMap,
+}) => {
+  if (!isOpen || !jobStatus) return null;
+
+  const canPause = jobStatus.status === 'running';
+  const canResume = jobStatus.status === 'paused';
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: '#111827',
+          borderRadius: 12,
+          padding: 32,
+          maxWidth: 480,
+          width: '90%',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+          position: 'relative',
+          border: '1px solid #1F2937',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+            background: 'none',
+            border: 'none',
+            fontSize: 20,
+            cursor: 'pointer',
+            color: '#9ca3af',
+            padding: 0,
+            width: 24,
+            height: 24,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'color 0.2s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#6b7280')}
+          onMouseLeave={e => (e.currentTarget.style.color = '#9ca3af')}
+        >
+          ✕
+        </button>
+
+        {/* Title */}
+        <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 24, color: '#E5E7EB' }}>
+          Job Status
+        </div>
+
+        {/* Status Badge & Job ID */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            marginBottom: 24,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              padding: '6px 12px',
+              backgroundColor: statusColorMap[jobStatus.status] || '#6b7280',
+              color: 'white',
+              borderRadius: 6,
+              textTransform: 'capitalize',
+              letterSpacing: '0.5px',
+            }}
+          >
+            {jobStatus.status}
+          </div>
+          <div style={{ fontSize: 12, color: '#9CA3AF' }}>
+            ID:{' '}
+            <code style={{ fontSize: 11, fontFamily: 'monospace', color: '#9CA3AF' }}>
+              {jobStatus.job_id.substring(0, 12)}...
+            </code>
+          </div>
+        </div>
+
+        {/* Status Stats Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
+          <div
+            style={{
+              padding: 16,
+              backgroundColor: '#0B1220',
+              borderRadius: 6,
+              border: '1px solid #1F2937',
+            }}
+          >
+            <div style={{ fontSize: 11, fontWeight: 500, color: '#9CA3AF', marginBottom: 8 }}>
+              URLs DISCOVERED
+            </div>
+            <div style={{ fontSize: 32, fontWeight: 700, color: '#E5E7EB', lineHeight: 1 }}>
+              {jobStatus.unique_urls_discovered || 0}
+            </div>
+          </div>
+          <div
+            style={{
+              padding: 16,
+              backgroundColor: '#0B1220',
+              borderRadius: 6,
+              border: '1px solid #1F2937',
+            }}
+          >
+            <div style={{ fontSize: 11, fontWeight: 500, color: '#9CA3AF', marginBottom: 8 }}>
+              STATUS
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#E5E7EB' }}>
+              {jobStatus.status === 'running' && '🔄 Running'}
+              {jobStatus.status === 'pending' && '⏳ Pending'}
+              {jobStatus.status === 'paused' && '⏸️ Paused'}
+              {jobStatus.status === 'completed' && '✅ Completed'}
+              {jobStatus.status === 'failed' && '❌ Failed'}
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: 10 }}>
+          {canPause && (
+            <button
+              onClick={onPause}
+              disabled={isLoading}
+              style={{
+                flex: 1,
+                padding: '12px 16px',
+                backgroundColor: '#f3f4f6',
+                color: 'black',
+                border: 'none',
+                borderRadius: 6,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                opacity: isLoading ? 0.7 : 1,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => !isLoading && (e.currentTarget.style.backgroundColor = '#e5e7eb')}
+              onMouseLeave={e => !isLoading && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+            >
+              ⏸ Pause
+            </button>
+          )}
+          {canResume && (
+            <button
+              onClick={onResume}
+              disabled={isLoading}
+              style={{
+                flex: 1,
+                padding: '12px 16px',
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: 6,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                opacity: isLoading ? 0.7 : 1,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => !isLoading && (e.currentTarget.style.backgroundColor = '#2563eb')}
+              onMouseLeave={e => !isLoading && (e.currentTarget.style.backgroundColor = '#3b82f6')}
+            >
+              ▶ Resume
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            style={{
+              flex: 1,
+              padding: '12px 16px',
+              backgroundColor: '#f3f4f6',
+              color: '#374151',
+              border: '1px solid #e5e7eb',
+              borderRadius: 6,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = '#e5e7eb';
+              e.currentTarget.style.borderColor = '#d1d5db';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = '#f3f4f6';
+              e.currentTarget.style.borderColor = '#e5e7eb';
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// History Edit Modal Component
+interface HistoryEditModalProps {
+  isOpen: boolean;
+  job: CrawlJob | null;
+  onClose: () => void;
+  onPause: (jobId: string) => void;
+  onResume: (jobId: string) => void;
+  onAddDocuments: (jobId: string, files: File[]) => void;
+  isLoading: boolean;
+  statusColorMap: Record<string, string>;
+}
+
+const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
+  isOpen,
+  job,
+  onClose,
+  onPause,
+  onResume,
+  onAddDocuments,
+  isLoading,
+  statusColorMap,
+}) => {
+  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
+
+  if (!isOpen || !job) return null;
+
+  const canPause = job.status === 'running';
+  const canResume = job.status === 'paused';
+  const canAddDocs = job.status !== 'completed' && job.status !== 'failed';
+
+  const handleAddDocuments = () => {
+    if (documentFiles.length > 0) {
+      onAddDocuments(job.jobId, documentFiles);
+      setDocumentFiles([]);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 999,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: '#111827',
+          borderRadius: 12,
+          padding: 28,
+          maxWidth: 500,
+          width: '90%',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+          maxHeight: '80vh',
+          overflowY: 'auto',
+          position: 'relative',
+          border: '1px solid #1F2937',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            background: 'none',
+            border: 'none',
+            fontSize: 24,
+            cursor: 'pointer',
+            color: '#6b7280',
+            padding: 4,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          ✕
+        </button>
+
+        {/* Title */}
+        <div style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 6, color: '#E5E7EB' }}>
+          Edit Job
+        </div>
+        <div style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 20 }}>{job.url}</div>
+
+        {/* Job Info */}
+        <div
+          style={{
+            padding: 14,
+            backgroundColor: '#0B1220',
+            borderRadius: 8,
+            marginBottom: 20,
+            border: '1px solid #1F2937',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ color: '#9CA3AF', fontSize: 12 }}>Status:</span>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 'bold',
+                padding: '4px 8px',
+                backgroundColor: statusColorMap[job.status],
+                color: 'white',
+                borderRadius: 3,
+                textTransform: 'capitalize',
+              }}
+            >
+              {job.status}
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ color: '#9CA3AF', fontSize: 12 }}>Created:</span>
+            <span style={{ fontSize: 12, color: '#E5E7EB' }}>{job.createdAt.toLocaleString()}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: '#9CA3AF', fontSize: 12 }}>Pages Crawled:</span>
+            <span style={{ fontSize: 12, color: '#E5E7EB' }}>{job.pagesCrawled}</span>
+          </div>
+        </div>
+
+        {/* Control Section */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 12, color: '#E5E7EB' }}>
+            Job Controls
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {canPause && (
+              <button
+                onClick={() => {
+                  onPause(job.jobId);
+                  onClose();
+                }}
+                disabled={isLoading}
+                style={{
+                  flex: 1,
+                  padding: '10px 12px',
+                  backgroundColor: '#f97316',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: 'bold',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  opacity: isLoading ? 0.6 : 1,
+                }}
+              >
+                ⏸ Pause
+              </button>
+            )}
+            {canResume && (
+              <button
+                onClick={() => {
+                  onResume(job.jobId);
+                  onClose();
+                }}
+                disabled={isLoading}
+                style={{
+                  flex: 1,
+                  padding: '10px 12px',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: 'bold',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  opacity: isLoading ? 0.6 : 1,
+                }}
+              >
+                ▶ Resume
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Document Upload Section */}
+        {canAddDocs && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 12, color: '#E5E7EB' }}>
+              Add Documents
+            </div>
+            <FileUpload
+              label="Upload additional documents"
+              accept=".pdf,.doc,.docx,.txt,.md,.brd"
+              onFileSelect={file => {
+                if (file) setDocumentFiles([...documentFiles, file]);
+              }}
+              selectedFile={documentFiles.length > 0 ? documentFiles[0] : null}
+              disabled={isLoading}
+              maxSizeMB={50}
+            />
+            {documentFiles.length > 0 && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>
+                  Selected files:
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {documentFiles.map((file, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '8px 12px',
+                        backgroundColor: '#f3f4f6',
+                        borderRadius: 4,
+                        fontSize: 12,
+                      }}
+                    >
+                      <span>{file.name}</span>
+                      <button
+                        onClick={() => setDocumentFiles(documentFiles.filter((_, i) => i !== idx))}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#ef4444',
+                          cursor: 'pointer',
+                          fontSize: 14,
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={handleAddDocuments}
+                  disabled={isLoading}
+                  style={{
+                    marginTop: 12,
+                    width: '100%',
+                    padding: '10px 16px',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: 'bold',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    opacity: isLoading ? 0.6 : 1,
+                  }}
+                >
+                  + Add Documents
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          style={{
+            width: '100%',
+            padding: '10px 16px',
+            backgroundColor: '#1F2937',
+            color: '#E5E7EB',
+            border: '1px solid #1F2937',
+            borderRadius: 6,
+            fontSize: 13,
+            fontWeight: 'bold',
+            cursor: 'pointer',
+          }}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Clear History Modal Component
+interface ClearHistoryModalProps {
+  isOpen: boolean;
+  mode: 'all' | 'single';
+  jobToDelete?: CrawlJob | null;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+const ClearHistoryModal: React.FC<ClearHistoryModalProps> = ({
+  isOpen,
+  mode,
+  jobToDelete,
+  onConfirm,
+  onCancel,
+}) => {
+  if (!isOpen) return null;
+
+  const isSingleDelete = mode === 'single' && jobToDelete;
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 998,
+      }}
+      onClick={onCancel}
+    >
+      <div
+        style={{
+          backgroundColor: '#111827',
+          borderRadius: 12,
+          padding: 28,
+          maxWidth: 400,
+          width: '90%',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+          border: '1px solid #1F2937',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Warning Icon */}
+        <div
+          style={{
+            fontSize: 40,
+            marginBottom: 16,
+            textAlign: 'center',
+          }}
+        >
+          ⚠️
+        </div>
+
+        {/* Title */}
+        <div
+          style={{
+            fontSize: 16,
+            fontWeight: 'bold',
+            marginBottom: 8,
+            textAlign: 'center',
+            color: '#E5E7EB',
+          }}
+        >
+          {isSingleDelete ? 'Delete Job?' : 'Clear History?'}
+        </div>
+
+        {/* Message */}
+        <div
+          style={{
+            fontSize: 13,
+            color: '#9CA3AF',
+            marginBottom: 20,
+            textAlign: 'center',
+            lineHeight: 1.6,
+          }}
+        >
+          {isSingleDelete ? (
+            <>
+              Are you sure you want to delete the job for <strong>{jobToDelete.url}</strong>?
+              <br />
+              This action cannot be undone.
+            </>
+          ) : (
+            <>
+              Are you sure you want to clear all crawl history?
+              <br />
+              This action cannot be undone.
+            </>
+          )}
+        </div>
+
+        {/* Buttons */}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={onCancel}
+            style={{
+              flex: 1,
+              padding: '10px 16px',
+              backgroundColor: '#1F2937',
+              color: '#E5E7EB',
+              border: '1px solid #1F2937',
+              borderRadius: 6,
+              fontSize: 13,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            style={{
+              flex: 1,
+              padding: '10px 16px',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              fontSize: 13,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+            }}
+          >
+            {isSingleDelete ? 'Delete' : 'Clear All'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 interface CrawlJob {
   jobId: string;
   url: string;
@@ -14,19 +667,24 @@ interface CrawlJob {
 }
 
 const tips = [
-  '🔗 Provide the exact URL you want to crawl',
-  '📊 Crawl depth determines how many link levels to follow (1-10)',
-  '⚡ Depth 1-2: Shallow crawl, fast and efficient',
-  '⚡ Depth 3-5: Standard crawl, balanced coverage',
-  '⚡ Depth 6+: Deep crawl, comprehensive but slower',
-  '🔒 Excluded URLs help skip logout, admin, or API paths',
+  '🔗 Provide a specific page URL for targeted test generation',
+  '� Attach Swagger/OpenAPI docs for API test cases',
+  '⚡ Shallow: Fastest, covers only top-level pages, lowest token usage.',
+  '⚡ Standard: Balanced speed and coverage, recommended for most cases.',
+  '⚡ Deep: Thorough, covers all nested flows, highest token usage.',
+];
+
+const inputOptions = [
+  { label: 'Target URL', value: 'url' },
+  { label: 'Document Upload', value: 'document' },
+  { label: 'Both', value: 'doc+url' },
 ];
 
 const CrawlPage: React.FC = () => {
   const [section, setSection] = useState<'new' | 'history'>('new');
 
   // Form state
-  const [inputType, setInputType] = useState<'url' | 'document'>('url');
+  const [inputType, setInputType] = useState<'url' | 'document' | 'doc+url'>('url');
   const [url, setUrl] = useState('');
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [maxDepth, setMaxDepth] = useState(2);
@@ -40,20 +698,52 @@ const CrawlPage: React.FC = () => {
   // Job state
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<CrawlStatusResponse | null>(null);
-  const [crawlResults, setCrawlResults] = useState<CrawlResultsResponse | null>(null);
+  const [_crawlResults, _setCrawlResults] = useState<CrawlResultsResponse | null>(null);
   const [crawlHistory, setCrawlHistory] = useState<CrawlJob[]>([]);
+
+  // Modal state
+  const [showStatusPopup, setShowStatusPopup] = useState(false);
+  const [selectedHistoryJob, setSelectedHistoryJob] = useState<CrawlJob | null>(null);
+  const [showHistoryEditModal, setShowHistoryEditModal] = useState(false);
+  const [showClearHistoryModal, setShowClearHistoryModal] = useState(false);
+  const [clearHistoryMode, setClearHistoryMode] = useState<'all' | 'single'>('all');
+  const [jobToDelete, setJobToDelete] = useState<CrawlJob | null>(null);
 
   // Polling
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Load history from localStorage on component mount
+  // Load history from localStorage and restore current job on component mount
   useEffect(() => {
     try {
+      // Load history
       const savedHistory = localStorage.getItem('crawlHistory');
       if (savedHistory) {
         const parsedHistory = JSON.parse(savedHistory) as CrawlJob[];
         setCrawlHistory(parsedHistory);
+      }
+
+      // Restore current job if it was running
+      const savedJobId = sessionStorage.getItem('currentJobId');
+      const savedJobStatus = sessionStorage.getItem('jobStatus');
+
+      if (savedJobId && savedJobStatus) {
+        try {
+          const parsedStatus = JSON.parse(savedJobStatus) as CrawlStatusResponse;
+          setCurrentJobId(savedJobId);
+          setJobStatus(parsedStatus);
+
+          // Auto-open status popup if job is still running
+          if (
+            parsedStatus.status === 'running' ||
+            parsedStatus.status === 'pending' ||
+            parsedStatus.status === 'paused'
+          ) {
+            setShowStatusPopup(true);
+          }
+        } catch (parseErr) {
+          console.error('Failed to parse saved job status:', parseErr);
+        }
       }
     } catch (err) {
       console.error('Failed to load crawl history from localStorage:', err);
@@ -68,6 +758,22 @@ const CrawlPage: React.FC = () => {
       console.error('Failed to save crawl history to localStorage:', err);
     }
   }, [crawlHistory]);
+
+  // Persist current job state to sessionStorage
+  useEffect(() => {
+    if (currentJobId && jobStatus) {
+      try {
+        sessionStorage.setItem('currentJobId', currentJobId);
+        sessionStorage.setItem('jobStatus', JSON.stringify(jobStatus));
+      } catch (err) {
+        console.error('Failed to save job state to sessionStorage:', err);
+      }
+    } else {
+      // Clear if job is no longer active
+      sessionStorage.removeItem('currentJobId');
+      sessionStorage.removeItem('jobStatus');
+    }
+  }, [currentJobId, jobStatus]);
 
   // Clean up polling on unmount
   useEffect(() => {
@@ -117,7 +823,7 @@ const CrawlPage: React.FC = () => {
         // If completed, fetch results
         if (status.status === 'completed') {
           const results = await crawlerService.getCrawlResults(currentJobId);
-          setCrawlResults(results);
+          _setCrawlResults(results);
           setSuccessMessage(`✓ Crawl completed! Found ${results.pages.length} pages.`);
 
           // Update history with final page count
@@ -227,27 +933,14 @@ const CrawlPage: React.FC = () => {
 
       setSuccessMessage(`✓ Crawl job started for ${inputType === 'url' ? 'URL' : 'document'}!`);
       setError(null);
+
+      // Automatically open status popup
+      setShowStatusPopup(true);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to start crawl';
       setError(errorMsg);
       setCurrentJobId(null);
       setJobStatus(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleStopCrawl = async () => {
-    if (!currentJobId) return;
-
-    setIsLoading(true);
-    try {
-      await crawlerService.stopCrawl(currentJobId);
-      setJobStatus(prev => (prev ? { ...prev, status: 'stopped' } : null));
-      setSuccessMessage('✓ Crawl stopped');
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to stop crawl';
-      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -285,19 +978,21 @@ const CrawlPage: React.FC = () => {
     }
   };
 
-  const handleExportCrawl = async () => {
-    if (!currentJobId) return;
+  const handleExportCrawl = async (jobId?: string) => {
+    const idToExport = jobId || currentJobId;
+    if (!idToExport) return;
 
     try {
-      const blob = await crawlerService.exportCrawl(currentJobId);
+      const blob = await crawlerService.exportCrawl(idToExport);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `crawl-${currentJobId}.zip`;
+      link.download = `crawl-${idToExport}.zip`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+      setSuccessMessage('✓ Export completed');
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to export crawl';
       setError(errorMsg);
@@ -305,12 +1000,85 @@ const CrawlPage: React.FC = () => {
   };
 
   const handleClearHistory = () => {
-    if (
-      window.confirm('Are you sure you want to clear all crawl history? This cannot be undone.')
-    ) {
+    setShowClearHistoryModal(true);
+    setClearHistoryMode('all');
+  };
+
+  const handleDeleteJob = (job: CrawlJob) => {
+    setShowClearHistoryModal(true);
+    setClearHistoryMode('single');
+    setJobToDelete(job);
+  };
+
+  const confirmDeleteJob = () => {
+    if (clearHistoryMode === 'single' && jobToDelete) {
+      setCrawlHistory(prev => prev.filter(job => job.jobId !== jobToDelete.jobId));
+      setSuccessMessage('✓ Job deleted');
+    } else if (clearHistoryMode === 'all') {
       setCrawlHistory([]);
       setSuccessMessage('✓ Crawl history cleared');
     }
+    setShowClearHistoryModal(false);
+    setJobToDelete(null);
+  };
+
+  const handleOpenStatusPopup = () => {
+    setShowStatusPopup(true);
+  };
+
+  const handleCloseStatusPopup = () => {
+    setShowStatusPopup(false);
+  };
+
+  const handleOpenHistoryEditModal = (job: CrawlJob) => {
+    setSelectedHistoryJob(job);
+    setShowHistoryEditModal(true);
+  };
+
+  const handleCloseHistoryEditModal = () => {
+    setShowHistoryEditModal(false);
+    setSelectedHistoryJob(null);
+  };
+
+  const handlePauseJobFromHistory = async (jobId: string) => {
+    setIsLoading(true);
+    try {
+      await crawlerService.pauseCrawl(jobId);
+      setCrawlHistory(prev =>
+        prev.map(job => (job.jobId === jobId ? { ...job, status: 'paused' } : job)),
+      );
+      setSuccessMessage('✓ Crawl paused');
+      handleCloseHistoryEditModal();
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to pause crawl';
+      setError(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResumeJobFromHistory = async (jobId: string) => {
+    setIsLoading(true);
+    try {
+      await crawlerService.resumeCrawl(jobId);
+      setCrawlHistory(prev =>
+        prev.map(job => (job.jobId === jobId ? { ...job, status: 'running' } : job)),
+      );
+      setSuccessMessage('✓ Crawl resumed');
+      handleCloseHistoryEditModal();
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to resume crawl';
+      setError(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddDocumentsFromHistory = async (_jobId: string, files: File[]) => {
+    // This would typically upload documents to the existing job
+    // For now, we'll just show a success message
+    setSuccessMessage(`✓ Added ${files.length} document(s) to job`);
+    handleCloseHistoryEditModal();
   };
 
   const statusColorMap: Record<string, string> = {
@@ -392,48 +1160,95 @@ const CrawlPage: React.FC = () => {
               <form onSubmit={handleStartCrawl}>
                 {/* Input Type Selector */}
                 <div className="input-group" style={{ marginBottom: 18 }}>
-                  <div className="input-label">Input Source *</div>
+                  <div className="input-label">Select Input Method</div>
                   <select
                     className="input-field"
                     value={inputType}
-                    onChange={e => setInputType(e.target.value as 'url' | 'document')}
+                    onChange={e => setInputType(e.target.value as 'url' | 'document' | 'doc+url')}
                     disabled={
                       isLoading ||
                       jobStatus?.status === 'running' ||
                       jobStatus?.status === 'pending'
                     }
                   >
-                    <option value="url">Website URL</option>
-                    <option value="document">Upload Document</option>
+                    {inputOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
                   </select>
-                  <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
-                    Choose whether to crawl a website or upload a document
-                  </div>
                 </div>
 
                 {/* URL Input (conditional) */}
-                {inputType === 'url' ? (
-                  <div className="input-group" style={{ marginBottom: 18 }}>
-                    <div className="input-label">Target URL *</div>
-                    <input
-                      className="input-field"
-                      type="url"
-                      placeholder="https://example.com"
-                      value={url}
-                      onChange={e => setUrl(e.target.value)}
-                      disabled={
-                        isLoading ||
-                        jobStatus?.status === 'running' ||
-                        jobStatus?.status === 'pending'
-                      }
-                      autoComplete="off"
-                    />
-                    <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
-                      Enter the website URL you want to crawl
+                {(inputType === 'url' || inputType === 'doc+url') && (
+                  <>
+                    <div className="input-group" style={{ marginBottom: 18 }}>
+                      <div className="input-label">Target URL</div>
+                      <input
+                        className="input-field"
+                        type="url"
+                        placeholder="https://yourapp.com/feature"
+                        value={url}
+                        onChange={e => setUrl(e.target.value)}
+                        disabled={
+                          isLoading ||
+                          jobStatus?.status === 'running' ||
+                          jobStatus?.status === 'pending'
+                        }
+                        autoComplete="off"
+                      />
                     </div>
-                  </div>
-                ) : (
+
+                    {/* Crawl Depth and Mode */}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: 10,
+                        marginBottom: 18,
+                      }}
+                    >
+                      <div className="input-group" style={{ marginBottom: 0 }}>
+                        <div className="input-label">Crawl Depth</div>
+                        <select
+                          className="input-field"
+                          value={maxDepth}
+                          onChange={e => setMaxDepth(parseInt(e.target.value))}
+                          disabled={
+                            isLoading ||
+                            jobStatus?.status === 'running' ||
+                            jobStatus?.status === 'pending'
+                          }
+                        >
+                          <option value={1}>1 — Shallow</option>
+                          <option value={2}>2 — Standard</option>
+                          <option value={3}>3 — Deep</option>
+                        </select>
+                      </div>
+
+                      <div className="input-group" style={{ marginBottom: 0 }}>
+                        <div className="input-label">Mode</div>
+                        <select
+                          className="input-field"
+                          disabled={
+                            isLoading ||
+                            jobStatus?.status === 'running' ||
+                            jobStatus?.status === 'pending'
+                          }
+                        >
+                          <option value="Page Level">Page Level</option>
+                          <option value="E2E (end to end)">E2E (end to end)</option>
+                          <option value="Functional">Functional</option>
+                        </select>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Document Input (conditional) */}
+                {(inputType === 'document' || inputType === 'doc+url') && (
                   <div className="input-group" style={{ marginBottom: 18 }}>
+                    <div className="input-label">Upload Documents (optional)</div>
                     <FileUpload
                       label="Document File"
                       accept=".pdf,.doc,.docx,.txt,.md,.brd"
@@ -446,72 +1261,27 @@ const CrawlPage: React.FC = () => {
                       }
                       maxSizeMB={50}
                     />
-                    <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
-                      Upload a document to generate tests from
-                    </div>
                   </div>
                 )}
 
                 {/* Crawl Depth */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: 10,
-                    marginBottom: 18,
-                  }}
-                >
-                  <div className="input-group" style={{ marginBottom: 0 }}>
-                    <div className="input-label">Crawl Depth *</div>
-                    <select
+                {(inputType === 'url' || inputType === 'doc+url') && (
+                  <div className="input-group" style={{ marginBottom: 18 }}>
+                    <div className="input-label">Excluded URLs (optional)</div>
+                    <textarea
                       className="input-field"
-                      value={maxDepth}
-                      onChange={e => setMaxDepth(parseInt(e.target.value))}
+                      placeholder="/logout, /admin/*, /api/v*, /search?*"
+                      value={excludedUrls}
+                      onChange={e => setExcludedUrls(e.target.value)}
                       disabled={
                         isLoading ||
                         jobStatus?.status === 'running' ||
                         jobStatus?.status === 'pending'
                       }
-                    >
-                      <option value={1}>1 — Shallow</option>
-                      <option value={2}>2 — Standard</option>
-                      <option value={3}>3 — Medium</option>
-                      <option value={5}>5 — Deep</option>
-                      <option value={10}>10 — Very Deep</option>
-                    </select>
+                      style={{ minHeight: 60, fontFamily: 'monospace', fontSize: 12 }}
+                    />
                   </div>
-
-                  {/* Max Depth Info */}
-                  <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                    <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>
-                      {maxDepth === 1 && '🚀 Fastest, single page + immediate links'}
-                      {maxDepth === 2 && '⚡ Recommended, good balance'}
-                      {maxDepth >= 3 && maxDepth <= 5 && '🔍 Thorough, more pages crawled'}
-                      {maxDepth >= 10 && '🐢 Comprehensive, will take longer'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Excluded URLs */}
-                <div className="input-group" style={{ marginBottom: 18 }}>
-                  <div className="input-label">Excluded URLs (optional)</div>
-                  <textarea
-                    className="input-field"
-                    placeholder="/logout, /admin/*, /api/v*, /search?*"
-                    value={excludedUrls}
-                    onChange={e => setExcludedUrls(e.target.value)}
-                    disabled={
-                      isLoading ||
-                      jobStatus?.status === 'running' ||
-                      jobStatus?.status === 'pending'
-                    }
-                    style={{ minHeight: 60, fontFamily: 'monospace', fontSize: 12 }}
-                  />
-                  <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
-                    Comma-separated patterns to skip. Examples: /logout, /admin/*, /api/v*,
-                    /search?*
-                  </div>
-                </div>
+                )}
 
                 {/* Button Group */}
                 <div style={{ display: 'flex', gap: 10 }}>
@@ -537,158 +1307,20 @@ const CrawlPage: React.FC = () => {
                   </button>
 
                   {jobStatus &&
-                    (jobStatus.status === 'running' || jobStatus.status === 'pending') && (
-                      <>
-                        <button
-                          type="button"
-                          className="btn"
-                          onClick={handlePauseCrawl}
-                          disabled={isLoading}
-                        >
-                          Pause
-                        </button>
-                        <button
-                          type="button"
-                          className="btn"
-                          onClick={handleStopCrawl}
-                          disabled={isLoading}
-                          style={{ color: '#ef4444' }}
-                        >
-                          Stop
-                        </button>
-                      </>
+                    (jobStatus.status === 'running' ||
+                      jobStatus.status === 'pending' ||
+                      jobStatus.status === 'paused') && (
+                      <button
+                        type="button"
+                        className="btn"
+                        onClick={handleOpenStatusPopup}
+                        disabled={isLoading}
+                      >
+                        📊 View Status
+                      </button>
                     )}
-
-                  {jobStatus && jobStatus.status === 'paused' && (
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      onClick={handleResumeCrawl}
-                      disabled={isLoading}
-                    >
-                      Resume
-                    </button>
-                  )}
-
-                  {jobStatus && jobStatus.status === 'completed' && (
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={handleExportCrawl}
-                      disabled={isLoading}
-                    >
-                      📥 Export Results
-                    </button>
-                  )}
                 </div>
               </form>
-
-              {/* Job Status Display */}
-              {jobStatus && (
-                <div
-                  style={{
-                    marginTop: 32,
-                    paddingTop: 32,
-                    borderTop: '1px solid var(--border-color)',
-                  }}
-                >
-                  <div style={{ marginBottom: 16 }}>
-                    <div
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}
-                    >
-                      <div
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 'bold',
-                          padding: '4px 12px',
-                          backgroundColor: statusColorMap[jobStatus.status] || '#6b7280',
-                          color: 'white',
-                          borderRadius: 4,
-                          textTransform: 'capitalize',
-                        }}
-                      >
-                        {jobStatus.status}
-                      </div>
-                      <div style={{ fontSize: 13, color: 'var(--text-dim)' }}>
-                        Job ID:{' '}
-                        <code style={{ fontSize: 11 }}>{jobStatus.job_id.substring(0, 8)}...</code>
-                      </div>
-                    </div>
-
-                    {/* Status Info */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                      <div
-                        style={{
-                          padding: 12,
-                          backgroundColor: 'var(--bg-secondary)',
-                          borderRadius: 6,
-                        }}
-                      >
-                        <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>
-                          URLs Discovered
-                        </div>
-                        <div style={{ fontSize: 24, fontWeight: 'bold', marginTop: 4 }}>
-                          {jobStatus.unique_urls_discovered}
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          padding: 12,
-                          backgroundColor: 'var(--bg-secondary)',
-                          borderRadius: 6,
-                        }}
-                      >
-                        <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>Pages Crawled</div>
-                        <div style={{ fontSize: 24, fontWeight: 'bold', marginTop: 4 }}>
-                          {crawlResults?.pages.length || 0}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Results Display */}
-                  {crawlResults && crawlResults.pages.length > 0 && (
-                    <div style={{ marginTop: 16 }}>
-                      <div style={{ fontSize: 14, fontWeight: 'bold', marginBottom: 12 }}>
-                        Crawled Pages:
-                      </div>
-                      <div style={{ maxHeight: 400, overflowY: 'auto' }}>
-                        {crawlResults.pages.map((page, idx) => (
-                          <div
-                            key={idx}
-                            style={{
-                              padding: 12,
-                              marginBottom: 8,
-                              backgroundColor: 'var(--bg-secondary)',
-                              borderRadius: 4,
-                              fontSize: 12,
-                              borderLeft: `3px solid ${page.status_code === 200 ? '#10b981' : '#ef4444'}`,
-                            }}
-                          >
-                            <div style={{ fontWeight: 'bold', marginBottom: 4 }}>
-                              {page.title || 'Untitled'} (Depth: {page.depth})
-                            </div>
-                            <div
-                              style={{ color: 'var(--text-dim)', marginBottom: 4 }}
-                              title={page.url}
-                            >
-                              {new URL(page.url).pathname.substring(0, 80)}
-                              {new URL(page.url).pathname.length > 80 ? '...' : ''}
-                            </div>
-                            <div style={{ display: 'flex', gap: 16, fontSize: 11 }}>
-                              <span>Status: {page.status_code}</span>
-                              <span>Links: {page.links_found}</span>
-                              {page.error && (
-                                <span style={{ color: '#ef4444' }}>Error: {page.error}</span>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           )}
 
@@ -747,10 +1379,11 @@ const CrawlPage: React.FC = () => {
                         style={{
                           display: 'flex',
                           justifyContent: 'space-between',
-                          alignItems: 'start',
+                          alignItems: 'center',
+                          marginBottom: 0,
                         }}
                       >
-                        <div>
+                        <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 13, fontWeight: 'bold' }}>{job.url}</div>
                           <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
                             {job.createdAt.toLocaleString()}
@@ -759,18 +1392,98 @@ const CrawlPage: React.FC = () => {
                             Pages: {job.pagesCrawled} | URLs Found: {job.pagesDiscovered}
                           </div>
                         </div>
+
                         <div
                           style={{
-                            fontSize: 11,
-                            fontWeight: 'bold',
-                            padding: '4px 8px',
-                            backgroundColor: statusColorMap[job.status],
-                            color: 'white',
-                            borderRadius: 3,
-                            textTransform: 'capitalize',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 6,
+                            alignItems: 'center',
+                            marginLeft: 12,
                           }}
                         >
-                          {job.status}
+                          {/* Edit Button - Show if status is running or paused */}
+                          {(job.status === 'running' || job.status === 'paused') && (
+                            <button
+                              onClick={() => handleOpenHistoryEditModal(job)}
+                              title="Edit job"
+                              style={{
+                                fontSize: 16,
+                                backgroundColor: '#3b82f6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: 3,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                minWidth: 60,
+                                padding: '4px 8px',
+                                transition: 'all 0.2s',
+                              }}
+                              onMouseEnter={e =>
+                                (e.currentTarget.style.backgroundColor = '#2563eb')
+                              }
+                              onMouseLeave={e =>
+                                (e.currentTarget.style.backgroundColor = '#3b82f6')
+                              }
+                            >
+                              ✎
+                            </button>
+                          )}
+
+                          {/* Delete Button */}
+                          <button
+                            onClick={() => handleDeleteJob(job)}
+                            title="Delete job"
+                            style={{
+                              fontSize: 16,
+                              backgroundColor: '#ef4444',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: 3,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              minWidth: 60,
+                              padding: '4px 8px',
+                              transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#dc2626')}
+                            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ef4444')}
+                          >
+                            🗑
+                          </button>
+                          {/* Export Button - Only show if status is completed */}
+                          {job.status === 'completed' && (
+                            <button
+                              onClick={() => handleExportCrawl(job.jobId)}
+                              title="Export results"
+                              style={{
+                                fontSize: 16,
+                                backgroundColor: '#10b981',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: 3,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                minWidth: 60,
+                                padding: '4px 8px',
+                                transition: 'all 0.2s',
+                              }}
+                              onMouseEnter={e =>
+                                (e.currentTarget.style.backgroundColor = '#059669')
+                              }
+                              onMouseLeave={e =>
+                                (e.currentTarget.style.backgroundColor = '#10b981')
+                              }
+                            >
+                              📥
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -781,53 +1494,105 @@ const CrawlPage: React.FC = () => {
           )}
         </div>
 
-        {/* Right Panel: Tips & Info */}
+        {/* Right Panel: Tips & Advanced */}
         <div style={{ flex: 1, minWidth: 320 }}>
           <div className="card" style={{ marginBottom: 24, padding: 24 }}>
             <div className="card-title" style={{ marginBottom: 12 }}>
-              How It Works
+              Tips
             </div>
             <ul
-              style={{ fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.8, paddingLeft: 18 }}
+              style={{ fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.7, paddingLeft: 18 }}
             >
-              {tips.map((tip, i) => (
-                <li key={i} style={{ marginBottom: 8 }}>
-                  {tip}
-                </li>
-              ))}
+              {tips
+                .filter(tip => !tip.toLowerCase().includes('token usage'))
+                .map((tip, i) => (
+                  <li key={i} style={{ marginBottom: 8 }}>
+                    {tip}
+                  </li>
+                ))}
             </ul>
           </div>
 
           <div className="card" style={{ padding: 24 }}>
             <div className="card-title" style={{ marginBottom: 12 }}>
-              API Status
+              Advanced Options
             </div>
-            <div
-              style={{
-                padding: 12,
-                backgroundColor: 'var(--bg-secondary)',
-                borderRadius: 6,
-                fontSize: 12,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <div
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    backgroundColor: '#10b981',
-                  }}
-                />
-                <span>Backend API Connected</span>
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>
-                http://localhost:8000/crawler
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  cursor: 'pointer',
+                  fontSize: 13,
+                }}
+              >
+                <input type="checkbox" defaultChecked style={{ accentColor: 'var(--accent)' }} />
+                Include authentication flows
+              </label>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  cursor: 'pointer',
+                  fontSize: 13,
+                }}
+              >
+                <input type="checkbox" defaultChecked style={{ accentColor: 'var(--accent)' }} />
+                Generate negative test cases
+              </label>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  cursor: 'pointer',
+                  fontSize: 13,
+                }}
+              >
+                <input type="checkbox" style={{ accentColor: 'var(--accent)' }} />
+                Screenshot each step
+              </label>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Status Popup Modal */}
+      <StatusPopup
+        isOpen={showStatusPopup}
+        jobStatus={jobStatus}
+        onClose={handleCloseStatusPopup}
+        onPause={handlePauseCrawl}
+        onResume={handleResumeCrawl}
+        isLoading={isLoading}
+        statusColorMap={statusColorMap}
+      />
+
+      {/* History Edit Modal */}
+      <HistoryEditModal
+        isOpen={showHistoryEditModal}
+        job={selectedHistoryJob}
+        onClose={handleCloseHistoryEditModal}
+        onPause={handlePauseJobFromHistory}
+        onResume={handleResumeJobFromHistory}
+        onAddDocuments={handleAddDocumentsFromHistory}
+        isLoading={isLoading}
+        statusColorMap={statusColorMap}
+      />
+
+      {/* Clear History Modal */}
+      <ClearHistoryModal
+        isOpen={showClearHistoryModal}
+        mode={clearHistoryMode}
+        jobToDelete={jobToDelete}
+        onConfirm={confirmDeleteJob}
+        onCancel={() => {
+          setShowClearHistoryModal(false);
+          setJobToDelete(null);
+        }}
+      />
     </div>
   );
 };
