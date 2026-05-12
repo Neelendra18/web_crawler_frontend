@@ -30,6 +30,24 @@ const LeftSidebar: React.FC = () => {
             }}
             autoComplete="off"
           />
+          {/* --- Scenario: Target URL Validation & Multi-URL Guidance --- */}
+          <div className="scenario-guidance" style={{ marginTop: 16, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: 12, fontSize: 13, color: '#334155' }}>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Important:</div>
+            <ul style={{ paddingLeft: 18, margin: 0 }}>
+              <li style={{ marginBottom: 4 }}>
+                Validation required: Does the target website use third-party hosted pages (e.g., external payment gateways like Amazon Pay)?
+              </li>
+              <li style={{ marginBottom: 4 }}>
+                Clarify if crawling is allowed for a single URL or multiple URLs per website.
+              </li>
+              <li style={{ marginBottom: 4 }}>
+                Current expectation: Support for up to <b>10 URLs per user</b>.
+              </li>
+              <li>
+                If more than 10 URLs are needed, please route the user back through onboarding to extend or update their configuration.
+              </li>
+            </ul>
+          </div>
         </div>
         <div className="input-group">
           <label className="input-label" htmlFor="auth-method">Auth Method</label>
