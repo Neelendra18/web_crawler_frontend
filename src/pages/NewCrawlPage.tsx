@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { crawlerService } from '@services/crawlerService';
 import { CrawlStartRequest, CrawlResultsResponse, CrawlStatusResponse } from '@app-types/index';
-import FileUpload from '@components/FileUpload/FileUpload';
 import './CrawlerPage.css';
 
 // Status Popup Modal Component
@@ -244,7 +243,6 @@ interface HistoryEditModalProps {
   onClose: () => void;
   onPause: (jobId: string) => void;
   onResume: (jobId: string) => void;
-  onAddDocuments: (jobId: string, files: File[]) => void;
   isLoading: boolean;
   statusColorMap: Record<string, string>;
 }
@@ -255,24 +253,13 @@ const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
   onClose,
   onPause,
   onResume,
-  onAddDocuments,
   isLoading,
   statusColorMap,
 }) => {
-  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
-
   if (!isOpen || !job) return null;
 
   const canPause = job.status === 'running';
   const canResume = job.status === 'paused';
-  const canAddDocs = job.status !== 'completed' && job.status !== 'failed';
-
-  const handleAddDocuments = () => {
-    if (documentFiles.length > 0) {
-      onAddDocuments(job.jobId, documentFiles);
-      setDocumentFiles([]);
-    }
-  };
 
   return (
     <div
@@ -422,81 +409,6 @@ const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
             )}
           </div>
         </div>
-
-        {/* Document Upload Section */}
-        {canAddDocs && (
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 12, color: '#E5E7EB' }}>
-              Add Documents
-            </div>
-            <FileUpload
-              label="Upload additional documents"
-              accept=".pdf,.doc,.docx,.txt,.md,.brd"
-              onFileSelect={file => {
-                if (file) setDocumentFiles([...documentFiles, file]);
-              }}
-              selectedFile={documentFiles.length > 0 ? documentFiles[0] : null}
-              disabled={isLoading}
-              maxSizeMB={50}
-            />
-            {documentFiles.length > 0 && (
-              <div style={{ marginTop: 12 }}>
-                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>
-                  Selected files:
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {documentFiles.map((file, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '8px 12px',
-                        backgroundColor: '#f3f4f6',
-                        borderRadius: 4,
-                        fontSize: 12,
-                      }}
-                    >
-                      <span>{file.name}</span>
-                      <button
-                        onClick={() => setDocumentFiles(documentFiles.filter((_, i) => i !== idx))}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#ef4444',
-                          cursor: 'pointer',
-                          fontSize: 14,
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  onClick={handleAddDocuments}
-                  disabled={isLoading}
-                  style={{
-                    marginTop: 12,
-                    width: '100%',
-                    padding: '10px 16px',
-                    backgroundColor: '#10b981',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 6,
-                    fontSize: 12,
-                    fontWeight: 'bold',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    opacity: isLoading ? 0.6 : 1,
-                  }}
-                >
-                  + Add Documents
-                </button>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Close Button */}
         <button
@@ -674,21 +586,18 @@ const tips = [
   '⚡ Deep: Thorough, covers all nested flows, highest token usage.',
 ];
 
-const inputOptions = [
-  { label: 'Target URL', value: 'url' },
-  { label: 'Document Upload', value: 'document' },
-  { label: 'Both', value: 'doc+url' },
-];
+const inputOptions = [{ label: 'Target URL', value: 'url' }];
 
 const CrawlPage: React.FC = () => {
   const [section, setSection] = useState<'new' | 'history'>('new');
 
   // Form state
-  const [inputType, setInputType] = useState<'url' | 'document' | 'doc+url'>('url');
+  const [inputType, setInputType] = useState<'url'>('url');
   const [url, setUrl] = useState('');
-  const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [maxDepth, setMaxDepth] = useState(2);
   const [excludedUrls, setExcludedUrls] = useState('');
+  const [externalUrls, setExternalUrls] = useState<string[]>(['']);
+  const [externalUrlErrors, setExternalUrlErrors] = useState<Record<number, string>>({});
 
   // API state
   const [isLoading, setIsLoading] = useState(false);
@@ -865,27 +774,55 @@ const CrawlPage: React.FC = () => {
     }
   };
 
+  const handleExternalUrlChange = (index: number, value: string) => {
+    const updated = [...externalUrls];
+    updated[index] = value;
+    setExternalUrls(updated);
+
+    // Validate URL if not empty
+    const errors = { ...externalUrlErrors };
+    if (value.trim() && !validateUrl(value)) {
+      errors[index] = 'Invalid URL format';
+    } else {
+      delete errors[index];
+    }
+    setExternalUrlErrors(errors);
+  };
+
+  const handleAddExternalUrl = () => {
+    if (externalUrls.length < 10) {
+      setExternalUrls([...externalUrls, '']);
+    }
+  };
+
+  const handleRemoveExternalUrl = (index: number) => {
+    const updated = externalUrls.filter((_, i) => i !== index);
+    setExternalUrls(updated);
+
+    // Clean up errors for removed index
+    const errors = { ...externalUrlErrors };
+    delete errors[index];
+    setExternalUrlErrors(errors);
+  };
+
+  const getValidExternalUrls = (): string[] => {
+    return externalUrls.filter(url => url.trim() && validateUrl(url));
+  };
+
   const handleStartCrawl = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccessMessage(null);
 
     // Validation
-    if (inputType === 'url') {
-      if (!url.trim()) {
-        setError('Please enter a URL');
-        return;
-      }
+    if (!url.trim()) {
+      setError('Please enter a URL');
+      return;
+    }
 
-      if (!validateUrl(url)) {
-        setError('Invalid URL format. Use https://example.com');
-        return;
-      }
-    } else {
-      if (!documentFile) {
-        setError('Please select a document to upload');
-        return;
-      }
+    if (!validateUrl(url)) {
+      setError('Invalid URL format. Use https://example.com');
+      return;
     }
 
     if (maxDepth < 1 || maxDepth > 10) {
@@ -900,9 +837,10 @@ const CrawlPage: React.FC = () => {
       abortControllerRef.current = new AbortController();
 
       const request: CrawlStartRequest = {
-        base_url: inputType === 'url' ? url : documentFile!.name,
+        base_url: url,
         max_depth: maxDepth,
         excluded_urls: excludedUrls.trim() || undefined,
+        external_urls: getValidExternalUrls().length > 0 ? getValidExternalUrls() : undefined,
       };
 
       const response = await crawlerService.startCrawl(request, {
@@ -916,13 +854,11 @@ const CrawlPage: React.FC = () => {
         unique_urls_discovered: 0,
       });
 
-      const sourceUrl = inputType === 'url' ? url : `📄 ${documentFile!.name}`;
-
       // Add to history
       setCrawlHistory(prev => [
         {
           jobId: response.job_id,
-          url: sourceUrl,
+          url: url,
           status: 'pending',
           createdAt: new Date(),
           pagesDiscovered: 0,
@@ -931,7 +867,7 @@ const CrawlPage: React.FC = () => {
         ...prev,
       ]);
 
-      setSuccessMessage(`✓ Crawl job started for ${inputType === 'url' ? 'URL' : 'document'}!`);
+      setSuccessMessage(`✓ Crawl job started!`);
       setError(null);
 
       // Automatically open status popup
@@ -1074,13 +1010,6 @@ const CrawlPage: React.FC = () => {
     }
   };
 
-  const handleAddDocumentsFromHistory = async (_jobId: string, files: File[]) => {
-    // This would typically upload documents to the existing job
-    // For now, we'll just show a success message
-    setSuccessMessage(`✓ Added ${files.length} document(s) to job`);
-    handleCloseHistoryEditModal();
-  };
-
   const statusColorMap: Record<string, string> = {
     pending: '#f59e0b',
     running: '#3b82f6',
@@ -1160,11 +1089,11 @@ const CrawlPage: React.FC = () => {
               <form onSubmit={handleStartCrawl}>
                 {/* Input Type Selector */}
                 <div className="input-group" style={{ marginBottom: 18 }}>
-                  <div className="input-label">Select Input Method</div>
+                  <div className="input-label">Input Method</div>
                   <select
                     className="input-field"
                     value={inputType}
-                    onChange={e => setInputType(e.target.value as 'url' | 'document' | 'doc+url')}
+                    onChange={e => setInputType(e.target.value as 'url')}
                     disabled={
                       isLoading ||
                       jobStatus?.status === 'running' ||
@@ -1179,145 +1108,274 @@ const CrawlPage: React.FC = () => {
                   </select>
                 </div>
 
-                {/* URL Input (conditional) */}
-                {(inputType === 'url' || inputType === 'doc+url') && (
-                  <>
-                    <div className="input-group" style={{ marginBottom: 18 }}>
-                      <div className="input-label">Target URL</div>
-                      <input
-                        className="input-field"
-                        type="url"
-                        placeholder="https://yourapp.com/feature"
-                        value={url}
-                        onChange={e => setUrl(e.target.value)}
+                {/* URL Input */}
+                <>
+                  <div className="input-group" style={{ marginBottom: 18 }}>
+                    <div className="input-label">Target URL</div>
+                    <input
+                      className="input-field"
+                      type="url"
+                      placeholder="https://yourapp.com/feature"
+                      value={url}
+                      onChange={e => setUrl(e.target.value)}
+                      disabled={
+                        isLoading ||
+                        jobStatus?.status === 'running' ||
+                        jobStatus?.status === 'pending'
+                      }
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  {/* External / Third-Party Hosted URLs */}
+                  <div className="input-group" style={{ marginBottom: 18 }}>
+                    <div className="input-label">External / Third-Party Hosted URLs</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 12 }}>
+                      Add external URLs used by this website (e.g. Amazon Pay, hosted checkout
+                      pages, third-party flows).
+                    </div>
+
+                    {/* External URLs List */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {externalUrls.map((externalUrl, index) => (
+                        <div
+                          key={index}
+                          style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}
+                        >
+                          <div style={{ flex: 1 }}>
+                            <input
+                              className="input-field"
+                              type="url"
+                              placeholder="https://external-service.com"
+                              value={externalUrl}
+                              onChange={e => handleExternalUrlChange(index, e.target.value)}
+                              disabled={
+                                isLoading ||
+                                jobStatus?.status === 'running' ||
+                                jobStatus?.status === 'pending'
+                              }
+                              autoComplete="off"
+                              style={{ marginBottom: externalUrlErrors[index] ? 4 : 0 }}
+                            />
+                            {externalUrlErrors[index] && (
+                              <div style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>
+                                ⚠️ {externalUrlErrors[index]}
+                              </div>
+                            )}
+                          </div>
+                          {externalUrls.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveExternalUrl(index)}
+                              disabled={
+                                isLoading ||
+                                jobStatus?.status === 'running' ||
+                                jobStatus?.status === 'pending'
+                              }
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#ef4444',
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
+                                fontSize: 18,
+                                padding: '8px 4px',
+                                marginTop: 2,
+                                opacity: isLoading ? 0.6 : 1,
+                              }}
+                              title="Remove URL"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add More Button */}
+                    {externalUrls.length < 10 && (
+                      <button
+                        type="button"
+                        onClick={handleAddExternalUrl}
                         disabled={
                           isLoading ||
                           jobStatus?.status === 'running' ||
                           jobStatus?.status === 'pending'
                         }
-                        autoComplete="off"
-                      />
+                        style={{
+                          marginTop: 10,
+                          padding: '8px 12px',
+                          backgroundColor: 'transparent',
+                          color: '#3b82f6',
+                          border: '1px dashed #3b82f6',
+                          borderRadius: 4,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: isLoading ? 'not-allowed' : 'pointer',
+                          opacity: isLoading ? 0.6 : 1,
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={e => {
+                          if (!isLoading) {
+                            e.currentTarget.style.backgroundColor = '#dbeafe';
+                          }
+                        }}
+                        onMouseLeave={e => {
+                          if (!isLoading) {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }
+                        }}
+                      >
+                        + Add More
+                      </button>
+                    )}
+
+                    {externalUrls.length >= 10 && (
+                      <div
+                        style={{
+                          marginTop: 10,
+                          fontSize: 11,
+                          color: '#f59e0b',
+                          padding: '8px 12px',
+                          backgroundColor: '#fef3c7',
+                          borderRadius: 4,
+                        }}
+                      >
+                        ℹ️ Maximum 10 external URLs reached
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Crawl Depth and Mode */}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: 10,
+                      marginBottom: 18,
+                    }}
+                  >
+                    <div className="input-group" style={{ marginBottom: 0 }}>
+                      <div className="input-label">Crawl Depth</div>
+                      <select
+                        className="input-field"
+                        value={maxDepth}
+                        onChange={e => setMaxDepth(parseInt(e.target.value))}
+                        disabled={
+                          isLoading ||
+                          jobStatus?.status === 'running' ||
+                          jobStatus?.status === 'pending'
+                        }
+                      >
+                        <option value={1}>1 — Shallow</option>
+                        <option value={2}>2 — Standard</option>
+                        <option value={3}>3 — Deep</option>
+                      </select>
                     </div>
 
-                    {/* Crawl Depth and Mode */}
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: 10,
-                        marginBottom: 18,
-                      }}
-                    >
-                      <div className="input-group" style={{ marginBottom: 0 }}>
-                        <div className="input-label">Crawl Depth</div>
-                        <select
-                          className="input-field"
-                          value={maxDepth}
-                          onChange={e => setMaxDepth(parseInt(e.target.value))}
-                          disabled={
-                            isLoading ||
-                            jobStatus?.status === 'running' ||
-                            jobStatus?.status === 'pending'
-                          }
-                        >
-                          <option value={1}>1 — Shallow</option>
-                          <option value={2}>2 — Standard</option>
-                          <option value={3}>3 — Deep</option>
-                        </select>
-                      </div>
-
-                      <div className="input-group" style={{ marginBottom: 0 }}>
-                        <div className="input-label">Mode</div>
-                        <select
-                          className="input-field"
-                          disabled={
-                            isLoading ||
-                            jobStatus?.status === 'running' ||
-                            jobStatus?.status === 'pending'
-                          }
-                        >
-                          <option value="Page Level">Page Level</option>
-                          <option value="E2E (end to end)">E2E (end to end)</option>
-                          <option value="Functional">Functional</option>
-                        </select>
-                      </div>
+                    <div className="input-group" style={{ marginBottom: 0 }}>
+                      <div className="input-label">Mode</div>
+                      <select
+                        className="input-field"
+                        disabled={
+                          isLoading ||
+                          jobStatus?.status === 'running' ||
+                          jobStatus?.status === 'pending'
+                        }
+                      >
+                        <option value="Page Level">Page Level</option>
+                        <option value="E2E (end to end)">E2E (end to end)</option>
+                        <option value="Functional">Functional</option>
+                      </select>
                     </div>
-                  </>
-                )}
-
-                {/* Document Input (conditional) */}
-                {(inputType === 'document' || inputType === 'doc+url') && (
-                  <div className="input-group" style={{ marginBottom: 18 }}>
-                    <div className="input-label">Upload Documents (optional)</div>
-                    <FileUpload
-                      label="Document File"
-                      accept=".pdf,.doc,.docx,.txt,.md,.brd"
-                      onFileSelect={setDocumentFile}
-                      selectedFile={documentFile}
-                      disabled={
-                        isLoading ||
-                        jobStatus?.status === 'running' ||
-                        jobStatus?.status === 'pending'
-                      }
-                      maxSizeMB={50}
-                    />
                   </div>
-                )}
+                </>
 
-                {/* Crawl Depth */}
-                {(inputType === 'url' || inputType === 'doc+url') && (
-                  <div className="input-group" style={{ marginBottom: 18 }}>
-                    <div className="input-label">Excluded URLs (optional)</div>
-                    <textarea
-                      className="input-field"
-                      placeholder="/logout, /admin/*, /api/v*, /search?*"
-                      value={excludedUrls}
-                      onChange={e => setExcludedUrls(e.target.value)}
-                      disabled={
-                        isLoading ||
-                        jobStatus?.status === 'running' ||
-                        jobStatus?.status === 'pending'
-                      }
-                      style={{ minHeight: 60, fontFamily: 'monospace', fontSize: 12 }}
-                    />
-                  </div>
-                )}
-
-                {/* Button Group */}
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
+                {/* Excluded URLs */}
+                <div className="input-group" style={{ marginBottom: 18 }}>
+                  <div className="input-label">Excluded URLs (optional)</div>
+                  <textarea
+                    className="input-field"
+                    placeholder="/logout, /admin/*, /api/v*, /search?*"
+                    value={excludedUrls}
+                    onChange={e => setExcludedUrls(e.target.value)}
                     disabled={
                       isLoading ||
                       jobStatus?.status === 'running' ||
                       jobStatus?.status === 'pending'
                     }
-                    style={{
-                      opacity:
-                        isLoading ||
-                        jobStatus?.status === 'running' ||
-                        jobStatus?.status === 'pending'
-                          ? 0.6
-                          : 1,
-                      cursor: isLoading ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    {isLoading ? 'Starting...' : 'Start Crawl'}
-                  </button>
+                    style={{ minHeight: 60, fontFamily: 'monospace', fontSize: 12 }}
+                  />
+                </div>
+
+                {/* Button Group */}
+                <div style={{ display: 'flex', gap: 10, flexDirection: 'column' }}>
+                  <button
+                          type="submit"
+                          className="btn btn-primary"
+                          disabled={
+                            isLoading ||
+                            jobStatus?.status === 'running' ||
+                            jobStatus?.status === 'pending'
+                          }
+                          style={{
+                            width: '100%',
+                            padding: '10px 14px',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            minHeight: '40px',
+
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+
+                            textAlign: 'center',
+
+                            opacity:
+                              isLoading ||
+                              jobStatus?.status === 'running' ||
+                              jobStatus?.status === 'pending'
+                                ? 0.6
+                                : 1,
+
+                            cursor: isLoading ? 'not-allowed' : 'pointer',
+                          }}
+                        >
+                          {isLoading ? 'Starting...' : 'Start Crawl'}
+                        </button>
 
                   {jobStatus &&
                     (jobStatus.status === 'running' ||
                       jobStatus.status === 'pending' ||
                       jobStatus.status === 'paused') && (
                       <button
-                        type="button"
-                        className="btn"
-                        onClick={handleOpenStatusPopup}
-                        disabled={isLoading}
-                      >
-                        📊 View Status
-                      </button>
+                              type="button"
+                              className="btn"
+                              onClick={handleOpenStatusPopup}
+                              disabled={isLoading}
+                              style={{
+                                width: '100%',
+                                minHeight: '54px',
+
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+
+                                padding: 0,
+                                margin: 0,
+
+                                fontSize: '14px',
+                                fontWeight: 500,
+                                lineHeight: 1,
+
+                                textAlign: 'center',
+
+                                opacity: isLoading ? 0.6 : 1,
+
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
+                              }}
+                            >
+                              📊 View Status
+                            </button>
                     )}
                 </div>
               </form>
@@ -1577,7 +1635,6 @@ const CrawlPage: React.FC = () => {
         onClose={handleCloseHistoryEditModal}
         onPause={handlePauseJobFromHistory}
         onResume={handleResumeJobFromHistory}
-        onAddDocuments={handleAddDocumentsFromHistory}
         isLoading={isLoading}
         statusColorMap={statusColorMap}
       />

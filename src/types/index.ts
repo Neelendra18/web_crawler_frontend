@@ -3,6 +3,7 @@ export interface CrawlStartRequest {
   base_url: string;
   max_depth?: number; // 0-10, default 2
   excluded_urls?: string; // comma-separated patterns
+  external_urls?: string[]; // array of external/third-party URLs
 }
 
 export interface CrawlStartResponse {
