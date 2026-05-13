@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../providers/AuthProvider';
@@ -10,6 +9,7 @@ import CrawlerPage from '../pages/CrawlerPage';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Topbar from '../components/Topbar/Topbar';
 import NewCrawlPage from '../pages/NewCrawlPage';
+import DocumentUploadPage from '../pages/DocumentUploadPage';
 import LiveJobsPage from '../pages/LiveJobsPage';
 import TokenManagementPage from '../pages/TokenManagementPage';
 import TestCasesPage from '../pages/TestCasesPage';
@@ -37,6 +37,7 @@ export const AppRouter: React.FC = () => {
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/crawler" element={<CrawlerPage />} />
                 <Route path="/new-crawl" element={<NewCrawlPage />} />
+                <Route path="/document-upload" element={<DocumentUploadPage />} />
                 <Route path="/live-jobs" element={<LiveJobsPage />} />
                 <Route path="/tokens" element={<TokenManagementPage />} />
                 <Route path="/test-cases" element={<TestCasesPage />} />

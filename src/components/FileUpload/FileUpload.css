@@ -1,0 +1,123 @@
+.file-upload {
+  margin-bottom: 16px;
+}
+
+.file-upload-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.file-upload-dropzone {
+  border: 2px dashed #ffffff;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: var(--panel);
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-upload-dropzone:hover:not(.disabled) {
+  border-color: var(--accent);
+  background-color: rgba(102, 217, 255, 0.05);
+}
+
+.file-upload-dropzone.drag-over {
+  border-color: var(--accent);
+  background-color: rgba(102, 217, 255, 0.1);
+}
+
+.file-upload-dropzone.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  border-color: var(--border);
+  background-color: var(--bg);
+}
+
+.file-upload-dropzone.error {
+  border-color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.upload-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.upload-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.primary-text {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.secondary-text {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.file-upload-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px;
+  background-color: rgba(102, 217, 255, 0.1);
+  border-radius: 6px;
+}
+
+.file-info {
+  flex: 1;
+  text-align: left;
+}
+
+.file-name {
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 2px;
+  word-break: break-all;
+}
+
+.file-size {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.file-remove-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  margin-left: 12px;
+}
+
+.file-remove-btn:hover:not(:disabled) {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.file-remove-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.file-upload-error {
+  margin-top: 8px;
+  color: #ef4444;
+  font-size: 12px;
+  text-align: left;
+}

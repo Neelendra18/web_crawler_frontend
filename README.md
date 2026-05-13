@@ -1,6 +1,33 @@
 # Web Crawler Frontend - React Architecture
 
-A best-practice React TypeScript frontend application for web crawling and automated test case generation. This project supports two input methods: website URL crawling and document upload analysis.
+A best-practice React TypeScript frontend application for web crawling and automated test case generation. This project is **fully integrated** with the **web_crawler** backend API for production-ready web scraping and test generation.
+
+## 🚀 Quick Start
+
+### 1. Backend Running?
+
+```bash
+cd ../web_crawler
+make dev
+```
+
+### 2. Frontend Running?
+
+```bash
+npm run dev
+```
+
+### 3. Navigate to Crawl Page
+
+- Enter URL: `https://example.com`
+- Set depth: `2`
+- Click "Start Crawl"
+- Watch live results!
+
+📖 **See:** [`QUICK_START_FRONTEND_BACKEND.md`](./QUICK_START_FRONTEND_BACKEND.md) for detailed setup  
+📖 **See:** [`FRONTEND_INTEGRATION_GUIDE.md`](./FRONTEND_INTEGRATION_GUIDE.md) for architecture details
+
+---
 
 ## 🏗️ Architecture Overview
 
@@ -59,23 +86,27 @@ web_crawler_frontend/
 ## ✨ Features
 
 ### Dual Input Methods
+
 - **🌐 Website URL Crawling**: Crawl and analyze live websites for test case generation
 - **📄 Document Upload**: Upload PDF, BRD, DOC, DOCX, TXT, and MD files for analysis
 - **🔄 Seamless Switching**: Toggle between input methods with persistent form state
 
 ### Advanced Crawling & Analysis
+
 - **🤖 AI-Powered Test Generation**: Automated test case creation from web content or documents
 - **🎯 Multi-Framework Support**: Generate tests for Playwright and Selenium
 - **💻 Language Options**: TypeScript and Python test output
 - **🔐 Authentication Handling**: Support for various auth methods (None, Form Login, SSO/OAuth)
 
 ### Real-Time Processing
+
 - **📊 Live Progress Tracking**: Real-time pipeline status and metrics
 - **📝 Detailed Logging**: Comprehensive logs with structured error tracking
 - **⏸️ Cancellable Operations**: Abort running crawls with proper cleanup
 - **📈 Performance Monitoring**: API timing and response metrics
 
 ### Developer Experience
+
 - **🏗️ Production-Ready Architecture**: Modular, scalable, and maintainable codebase
 - **🧪 Comprehensive Testing**: Unit tests with Vitest and React Testing Library
 - **📚 Full TypeScript**: Type-safe development with strict mode
@@ -85,16 +116,19 @@ web_crawler_frontend/
 ## 📋 Key Architecture Decisions
 
 ### 1. **State Management: Zustand**
+
 - ✅ Lightweight and performant
 - ✅ Minimal boilerplate compared to Redux
 - ✅ Perfect for this application's complexity level
 - ✅ Easy to test and debug
 
 Two separate stores:
+
 - `useCrawlerStore`: UI form state and crawler configuration
 - `useProcessingStore`: Processing progress, logs, and metrics
 
 ### 2. **API Integration: Axios + Service Layer**
+
 - ✅ Centralized API client with interceptors
 - ✅ Request/response logging in debug mode
 - ✅ Type-safe API calls
@@ -102,18 +136,21 @@ Two separate stores:
 - ✅ Automatic error handling
 
 ### 3. **Component Architecture**
+
 - ✅ Small, focused, reusable components
 - ✅ Container/Presentational pattern
 - ✅ Proper TypeScript interfaces for all props
 - ✅ CSS modules for component styling
 
 ### 4. **Build Tool: Vite**
+
 - ✅ Lightning-fast HMR (Hot Module Replacement)
 - ✅ Optimized for modern JavaScript
 - ✅ Better TypeScript support
 - ✅ Smaller bundle sizes
 
 ### 5. **Type Safety: TypeScript**
+
 - ✅ Strict mode enabled
 - ✅ All API responses typed
 - ✅ Component props fully typed
@@ -122,7 +159,8 @@ Two separate stores:
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 
 ### Installation
@@ -181,19 +219,23 @@ npm run test:coverage
 ## 📦 Dependencies
 
 ### Core
+
 - **react**: UI framework
 - **react-dom**: React DOM rendering
 - **react-router-dom**: Client-side routing
 
 ### State & Data
+
 - **zustand**: Lightweight state management
 - **axios**: HTTP client
 
 ### Utilities
+
 - **clsx**: Utility for conditional CSS classes
 - **date-fns**: Date formatting utilities
 
 ### Development
+
 - **vite**: Build tool and dev server
 - **typescript**: Type safety
 - **eslint**: Code linting
@@ -241,11 +283,12 @@ All requests should return proper HTTP status codes and error messages.
 ### Base Components
 
 #### `<Input />`
+
 ```tsx
 <Input
   label="Website URL"
   value={url}
-  onChange={(e) => setUrl(e.target.value)}
+  onChange={e => setUrl(e.target.value)}
   error={error}
   placeholder="https://example.com"
   disabled={isLoading}
@@ -253,19 +296,21 @@ All requests should return proper HTTP status codes and error messages.
 ```
 
 #### `<Select />`
+
 ```tsx
 <Select
   label="Framework"
   options={[
     { label: 'Playwright', value: 'Playwright' },
-    { label: 'Selenium', value: 'Selenium' }
+    { label: 'Selenium', value: 'Selenium' },
   ]}
   value={framework}
-  onChange={(e) => setFramework(e.target.value)}
+  onChange={e => setFramework(e.target.value)}
 />
 ```
 
 #### `<Button />`
+
 ```tsx
 <Button
   variant="primary" // primary | secondary | danger
@@ -277,6 +322,7 @@ All requests should return proper HTTP status codes and error messages.
 ```
 
 #### `<StatusIndicator />`
+
 ```tsx
 <StatusIndicator
   status="running" // idle | running | completed | failed
@@ -287,55 +333,66 @@ All requests should return proper HTTP status codes and error messages.
 ### Complex Components
 
 #### `<Pipeline />`
+
 Displays 5-step processing pipeline with visual progress.
 
 #### `<Batches />`
+
 Shows parallel batch processing with progress bars.
 
 #### `<LogViewer />`
+
 Scrollable log viewer with severity levels (info, warning, error, success).
 
 #### `<TestPreview />`
+
 Displays generated test cases with code snippets.
 
 ## 🎯 Best Practices Implemented
 
 ### ✅ Code Organization
+
 - Clear separation of concerns
 - Single Responsibility Principle
 - DRY (Don't Repeat Yourself)
 
 ### ✅ Performance
+
 - Code splitting ready
 - Lazy loading support via React Router
 - Optimized re-renders with Zustand
 - Efficient API polling strategy
 
 ### ✅ Error Handling
+
 - Try-catch blocks in async operations
 - Error logging to UI
 - User-friendly error messages
 - Graceful degradation
 
 ### ✅ Type Safety
+
 - Strict TypeScript
 - No `any` types (except unavoidable)
 - Proper interface definitions
 - Type inference where appropriate
 
 ### ✅ Accessibility
+
 - Semantic HTML
 - ARIA labels where needed
 - Keyboard navigation support
 - Good contrast ratios
 
 ### ✅ Testing
+
 - Unit test infrastructure ready
 - Component testing utilities
 - API mocking capabilities
 - Integration test support
 
 ### ✅ Development Experience
+
 - Hot Module Replacement (HMR)
 - Fast refresh
 - Source maps for debugging
@@ -354,11 +411,12 @@ VITE_ENABLE_DEBUG_MODE=false
 ```
 
 Access in code:
-```tsx
-import { config } from '@utils/config'
 
-const apiUrl = config.apiBaseUrl
-const debugMode = config.enableDebugMode
+```tsx
+import { config } from '@utils/config';
+
+const apiUrl = config.apiBaseUrl;
+const debugMode = config.enableDebugMode;
 ```
 
 ## 📁 File Naming Conventions
@@ -372,16 +430,19 @@ const debugMode = config.enableDebugMode
 ## 🧪 Testing Strategy
 
 ### Unit Tests
+
 - Component rendering
 - User interactions
 - Hook behavior
 
 ### Integration Tests
+
 - API communication flow
 - Store state updates
 - Component integration
 
 ### E2E Tests (Future)
+
 - Full user workflows
 - Cross-browser testing
 - Performance testing
@@ -389,33 +450,38 @@ const debugMode = config.enableDebugMode
 ## 📊 Performance Tips
 
 1. **Bundle Size**
+
    ```bash
    npm run build  # Check dist size
    ```
 
 2. **Lazy Loading**
+
    ```tsx
-   const CrawlerPage = lazy(() => import('@pages/CrawlerPage'))
+   const CrawlerPage = lazy(() => import('@pages/CrawlerPage'));
    ```
 
 3. **Memoization**
    ```tsx
-   const MemoComponent = memo(MyComponent)
+   const MemoComponent = memo(MyComponent);
    ```
 
 ## 🚨 Common Issues & Solutions
 
 ### Issue: API calls failing
+
 - Check CORS configuration on backend
 - Verify `VITE_API_BASE_URL` in `.env`
 - Check network tab in DevTools
 
 ### Issue: State not updating
+
 - Verify Zustand store is properly initialized
 - Check if component is subscribed to store
 - Review selector function
 
 ### Issue: Styling not appearing
+
 - Clear browser cache
 - Check CSS file imports
 - Verify CSS class names match
@@ -451,6 +517,7 @@ For questions or issues, please contact the development team or create an issue 
 The UI visualizes the entire pipeline, batch processing, generated test previews, and real-time execution logs.
 
 Key Highlights:
+
 - Modular and feature-based React architecture
 - State management using Redux Toolkit
 - Config-driven pipeline visualization
