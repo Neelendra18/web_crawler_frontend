@@ -11,6 +11,12 @@ node_modules
 /dist
 /build
 
+# Ignore all markdown files
+*.md
+
+# Except README.md
+!README.md
+
 # Build artifacts
 *.js
 *.d.ts
