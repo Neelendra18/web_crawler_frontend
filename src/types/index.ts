@@ -169,3 +169,155 @@ export interface PipelineStep {
   completed: boolean;
   active: boolean;
 }
+
+// OCR API Types
+export interface OCRParseResponse {
+  workflowId: string;
+  status: 'processing' | 'completed' | 'failed' | 'error';
+}
+
+export interface OCRStatusResponse {
+  status: 'processing' | 'completed' | 'failed' | 'error';
+  result?: DocumentResultData;
+  error?: string;
+}
+
+export interface BBox {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+
+export interface ParentTag {
+  tag: string;
+  text: string;
+}
+
+export interface SegmentData {
+  id: string;
+  type: string;
+  tag?: string;
+  text: string;
+  bbox?: BBox;
+  reading_order: number;
+  language?: string;
+  token_count: number;
+  confidence?: number;
+  chunk_ready: boolean;
+  parent_tags?: ParentTag[];
+  mime_type?: string;
+  base64_data?: string;
+  description?: string;
+  image_classification?: string;
+  columns?: string[];
+  rows?: Array<Record<string, string>>;
+  merged_cells?: boolean;
+  pairs?: Array<Record<string, string>>;
+}
+
+export interface SegmentCounts {
+  detected: number;
+  processed: number;
+  failed: number;
+}
+
+export interface ImageCounts extends SegmentCounts {
+  graphical_images: number;
+  text_images: number;
+}
+
+export interface PageSummaryOCR {
+  total_segments: number;
+  images: ImageCounts;
+  tables: SegmentCounts;
+  paragraphs: SegmentCounts;
+  key_value_blocks: SegmentCounts;
+  headings: SegmentCounts;
+  chunk_ready_segments: number;
+  chunk_skipped_segments: number;
+  low_confidence_segments: number;
+}
+
+export interface PageResultOCR {
+  page_number: number;
+  has_images: boolean;
+  has_tables: boolean;
+  is_scanned: boolean;
+  extraction_method: string;
+  page_summary: PageSummaryOCR;
+  segments: SegmentData[];
+}
+
+export interface DocumentMetadataOCR {
+  filename: string;
+  page_count: number;
+  author?: string;
+  created_at?: string;
+  modified_at?: string;
+  language?: string;
+}
+
+export interface DocumentProcessingSummary {
+  total_pages: number;
+  total_segments: number;
+  images: ImageCounts;
+  tables: SegmentCounts;
+  paragraphs: SegmentCounts;
+  key_value_blocks: SegmentCounts;
+  headings: SegmentCounts;
+  chunk_ready_segments: number;
+  chunk_skipped_segments: number;
+  overall_quality_score?: number;
+}
+
+export interface LogWarning {
+  segment_id: string;
+  warning_type: string;
+  message: string;
+}
+
+export interface ProcessingLog {
+  pipeline_version: string;
+  processing_time_ms: number;
+  errors: string[];
+  warnings: LogWarning[];
+}
+
+export interface HierarchyNode {
+  heading: string;
+  level: number;
+  content: string[];
+  children: HierarchyNode[];
+}
+
+export interface DocumentResultData {
+  document_id: string;
+  file_type: string;
+  content_hash: string;
+  extraction_method: string;
+  metadata: DocumentMetadataOCR;
+  document_processing_summary: DocumentProcessingSummary;
+  pages: PageResultOCR[];
+  hierarchy: HierarchyNode[];
+  processing_log: ProcessingLog;
+}
+
+export interface DocumentListItem {
+  workflow_id: string;
+  document_id: string;
+  filename: string;
+  file_type: string;
+  status: string;
+  page_count: number;
+  created_at: string;
+}
+
+export interface OCRDocumentsResponse {
+  documents: DocumentListItem[];
+}
+
+export interface OCRExtractTextResponse {
+  text: string;
+  filename: string;
+}
