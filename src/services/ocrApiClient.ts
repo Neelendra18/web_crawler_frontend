@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
+import { config } from '@utils/config';
 import { logger } from '@utils/logger';
 
 class OCRApiClient {
@@ -6,9 +7,8 @@ class OCRApiClient {
   private controllers: Map<string, AbortController> = new Map();
 
   constructor() {
-    // OCR Backend runs on port 8001
     this.client = axios.create({
-      baseURL: 'http://localhost:8001',
+      baseURL: config.ocrApiBaseUrl,
       timeout: 60000, // OCR processing might take longer
       headers: {
         'Content-Type': 'application/json',
