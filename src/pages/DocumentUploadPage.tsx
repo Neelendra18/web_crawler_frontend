@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import FileUpload from '@components/FileUpload/FileUpload';
+import Modal from '@components/Modal/Modal';
+import { useEffect as useEffectReact, useState as useStateReact } from 'react';
+import { parseMarkdownDemo } from '../utils/parseMarkdownDemo';
+import { renderDocumentPrototype } from '../utils/prototypeRenderer';
 import './CrawlerPage.css';
 
 interface UploadedDocument {
@@ -19,6 +23,8 @@ const DocumentUploadPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [section, setSection] = useState<'upload' | 'history'>('upload');
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [showPrototypeModal, setShowPrototypeModal] = useState(false);
+  const [prototypeDoc, setPrototypeDoc] = useState<any>(null);
 
   // Load uploaded documents from localStorage on mount
   useEffect(() => {
@@ -135,11 +141,40 @@ const DocumentUploadPage: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Update status to processing
+
       setUploadedDocuments(prev =>
         prev.map(doc =>
           doc.id === newDoc.id ? { ...doc, status: 'processing', progress: 20 } : doc,
         ),
       );
+
+
+      // Simulate processing completion and show prototype modal
+      setTimeout(() => {
+        setUploadedDocuments(prev =>
+          prev.map(doc =>
+            doc.id === newDoc.id ? { ...doc, status: 'completed', progress: 100 } : doc,
+          ),
+        );
+        // Read and parse the uploaded markdown file for preview
+        if (documentFile && documentFile.type === 'text/markdown') {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const md = event.target?.result as string;
+            setPrototypeDoc(parseMarkdownDemo(md));
+            setShowPrototypeModal(true);
+          };
+          reader.readAsText(documentFile);
+        } else {
+          // fallback to demo doc if not markdown
+          fetch('/demo-doc.md')
+            .then(res => res.text())
+            .then(md => {
+              setPrototypeDoc(parseMarkdownDemo(md));
+              setShowPrototypeModal(true);
+            });
+        }
+      }, 1200);
 
       setSuccessMessage(`✓ Document "${documentFile.name}" uploaded successfully`);
       setDocumentFile(null);
@@ -203,6 +238,21 @@ const DocumentUploadPage: React.FC = () => {
 
   return (
     <div style={{ padding: 32 }}>
+      {/* Prototype Preview Modal */}
+      <Modal
+        open={showPrototypeModal}
+        onClose={() => setShowPrototypeModal(false)}
+        title={prototypeDoc ? `Prototype Preview: ${prototypeDoc.title}` : 'Prototype Preview'}
+        actions={
+          <button className="btn btn-primary" onClick={() => setShowPrototypeModal(false)}>
+            Close
+          </button>
+        }
+      >
+        <div style={{ maxHeight: 500, overflowY: 'auto', minWidth: 400 }}>
+          {prototypeDoc ? renderDocumentPrototype(prototypeDoc) : 'Loading...'}
+        </div>
+      </Modal>
       {/* Page Heading */}
       <div className="section-header" style={{ marginBottom: 32 }}>
         <div className="section-title">Document Upload</div>

@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../providers/AuthProvider';
 import LoginPage from '../pages/LoginPage';
 import DashboardPage from '../pages/DashboardPage';
+import PrototypePage from '../pages/PrototypePage';
+import TestCasePreviewPage from '../pages/TestCasePreviewPage';
 import AuditLogsPage from '../pages/AuditLogsPage';
 import ProfilePage from '../pages/ProfilePage';
 import CrawlerPage from '../pages/CrawlerPage';
@@ -47,6 +49,8 @@ export const AppRouter: React.FC = () => {
                 <Route path="/audit" element={<AuditLogsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/denied" element={<PermissionDeniedPage />} />
+                <Route path="/prototype" element={<PrototypePage />} />
+                <Route path="/prototype-tests" element={<TestCasePreviewPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </div>
