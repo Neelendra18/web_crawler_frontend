@@ -13,5 +13,11 @@ services:
         VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
         VITE_OCR_API_BASE_URL: ${VITE_OCR_API_BASE_URL:-http://localhost:8001}
     ports:
-      - "${FRONTEND_PORT:-8080}:80"
+      - '${FRONTEND_PORT:-8080}:80'
     restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', '-s', 'http://127.0.0.1/health']
+      interval: 30s
+      timeout: 10s
+      retries: 2
+      start_period: 15s

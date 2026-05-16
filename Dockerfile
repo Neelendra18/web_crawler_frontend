@@ -38,5 +38,5 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://127.0.0.1/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=2 \
+  CMD curl -f -s -o /dev/null -w "%{http_code}" http://127.0.0.1/health | grep -q 200 || exit 1
